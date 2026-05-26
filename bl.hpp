@@ -12,7 +12,7 @@ namespace bl {
 	// See https://semver.org/
 
 	inline constexpr unsigned major{0}; ///< Incompatible API changes.
-	inline constexpr unsigned minor{1}; ///< Backwards-compatible changes.
+	inline constexpr unsigned minor{2}; ///< Backwards-compatible changes.
 	inline constexpr unsigned patch{0}; ///< Backwards-compatible
 					    ///< implementation changes (usually
 					    ///< bug fixes, and API stays the
@@ -244,7 +244,8 @@ namespace bl {
 		e_unknown_190_,
 		e_unknown_191_,
 		e_unknown_192_,
-		eRGB2_Phosphor_Light ///< RGB2 Phosphor Light
+		eRGB2_Phosphor_Light, ///< RGB2 Phosphor Light
+		e8_Bit_Shift_Register ///< 8 Bit Shift Register
 	};
 
 	/// @brief Block materials.
