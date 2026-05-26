@@ -1,0 +1,5 @@
+X(Sphere, "Sphere", 1)
+X(Box, "Box", 2)
+X(Cylinder, "Cylinder", 3)
+X(Wedge, "Wedge", 4)
+X(Pyramid, "Pyramid", 5)
