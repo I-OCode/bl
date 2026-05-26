@@ -13,7 +13,7 @@ namespace bl {
 
 	inline constexpr unsigned major{0}; ///< Incompatible API changes.
 	inline constexpr unsigned minor{2}; ///< Backwards-compatible changes.
-	inline constexpr unsigned patch{0}; ///< Backwards-compatible
+	inline constexpr unsigned patch{1}; ///< Backwards-compatible
 					    ///< implementation changes (usually
 					    ///< bug fixes, and API stays the
 					    ///< same).

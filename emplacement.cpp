@@ -84,13 +84,13 @@ bl::emplacement::emplacement(std::string_view src) {
 		stream blk_beg{main};
 		main.read_until(";");
 
-		// Munch the `;`, if there was any.
-		main.read_single();
-
 		// Subsection of the `main` stream containing the current block.
 		stream blk{
 			{blk_beg.i, main.i}
 		};
+
+		// Munch the `;`, if there was any.
+		main.read_single();
 
 		std::array<char, 3> encoded_name{blk.read_single().value()};
 		if (is_one_of(encoded_name[0], "#%")) {
