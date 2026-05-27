@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- Made the code in `cfg.cpp` a little less crap.
+- Added constructor to `bl::rotation`.
+- Got a start on the `DOCS.md` file.
+
 ## 0.2.1
 
 fix

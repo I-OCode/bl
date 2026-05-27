@@ -12,8 +12,8 @@ namespace bl {
 	// See https://semver.org/
 
 	inline constexpr unsigned major{0}; ///< Incompatible API changes.
-	inline constexpr unsigned minor{2}; ///< Backwards-compatible changes.
-	inline constexpr unsigned patch{1}; ///< Backwards-compatible
+	inline constexpr unsigned minor{3}; ///< Backwards-compatible changes.
+	inline constexpr unsigned patch{0}; ///< Backwards-compatible
 					    ///< implementation changes (usually
 					    ///< bug fixes, and API stays the
 					    ///< same).
@@ -432,6 +432,15 @@ namespace bl {
 					///< degrees.
 
 		rotation() noexcept = default;
+
+		/// @brief Constructor.
+		/// @param[in] a First component.
+		/// @param[in] b Second component.
+		/// @param[in] c Third component.
+		rotation(
+			std::uint_least8_t a, std::uint_least8_t b,
+			std::uint_least8_t c
+		) noexcept: x{a}, y{b}, z{c} {}
 
 		/// @brief Construct the rotation from an encoded rotation.
 		/// @param[in] v The encoded value to decode.

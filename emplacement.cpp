@@ -1,4 +1,5 @@
 #include "bl.hpp"
+#include "detail.hpp"
 #include <algorithm>
 #include <ranges>
 #include <vector>
@@ -11,68 +12,6 @@ public:
 	std::size_t to_blk{};
 	char from_con{};
 	char to_con{};
-};
-
-// Simple function to check if a character is one of the given characters in
-// `set`.
-static bool is_one_of(std::optional<char> c, std::string_view set) noexcept {
-	for (auto x: set) {
-		if (c == x) { return true; }
-	}
-
-	return false;
-}
-
-// Stream-like/stream-based string parser.
-class stream {
-public:
-	std::string_view s{};
-	std::string_view::const_iterator i{};
-
-	stream(std::string_view s_): s{s_}, i{s_.cbegin()} {}
-
-	std::size_t chars_left() const noexcept {
-		return this->s.cend() - this->i;
-	}
-
-	bool could_read(std::size_t n) const noexcept {
-		return this->chars_left() >= n;
-	}
-
-	bool eof() const noexcept { return !this->could_read(1); }
-
-	std::optional<char> peek_single() const noexcept {
-		if (eof()) { return {}; }
-
-		return *this->i;
-	}
-
-	template<std::size_t n>
-	std::optional<std::span<char const, n>> read() noexcept {
-		if (!this->could_read(n)) { return {}; }
-
-		std::span<char const, n> s{this->i, n};
-		this->i += n;
-
-		return s;
-	}
-
-	std::optional<char> read_single() noexcept {
-		auto c{this->peek_single()};
-		if (c.has_value()) { ++this->i; }
-
-		return c;
-	}
-
-	std::string_view read_until(std::string_view set) noexcept {
-		auto beg{this->i};
-		while (!this->eof()
-			&& !is_one_of(this->peek_single().value(), set)) {
-			this->read_single();
-		}
-
-		return {beg, this->i};
-	}
 };
 
 bl::emplacement::emplacement(std::string_view src) {

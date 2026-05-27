@@ -1,101 +1,97 @@
 #include "bl.hpp"
+#include "detail.hpp"
 #include <format>
 #include <limits>
 #include <ranges>
 
-static constexpr std::array rev4{
-	0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE, 0x1, 0x9, 0x5, 0xD, 0x3, 0xB,
-	0x7, 0xF
+static std::uint8_t bitrev8(std::uint8_t v) {
+	// LUT for reversing the bits of a 4-bit nibble.
+	std::array rev4{
+		0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE, 0x1, 0x9, 0x5, 0xD, 0x3,
+		0xB, 0x7, 0xF
+	};
+
+	return rev4[v & 0xF] << 4 | rev4[v >> 4];
+}
+
+static std::uint16_t bitrev16(std::uint16_t v) {
+	return bitrev8(v & 0xFF) << 8 | bitrev8(v >> 8);
+}
+
+class value_stream: public stream {
+public:
+	std::string parse_str();
+	double parse_num();
+	std::array<double, 3> parse_units();
 };
 
-static std::uint8_t bit_reverse8(std::uint8_t value) {
-	return rev4[value & 0xF] << 4 | rev4[value >> 4];
-}
+std::string value_stream::parse_str() {
+	if (this->peek_single() == '`') { return ""; }
 
-static std::uint16_t bit_reverse16(std::uint16_t value) {
-	return rev4[value & 0xF] << 12
-		| rev4[value >> 4 & 0xF] << 8
-		| rev4[value >> 8 & 0xF] << 4
-		| rev4[value >> 12 & 0xF];
-}
+	if (this->peek_single() == '|') {
+		// Consume the `|`.
+		this->read_single();
 
-static std::string_view::const_iterator
-parse_value_impl(std::string_view::const_iterator& i, std::string_view v) {
-	if (i == v.cend()) { return i; }
+		stream beg{*this};
+		this->read_until("~");
 
-	if (*i == '`') { return i; }
-
-	std::size_t len{};
-
-	char c{*i++};
-	if (c == '|') {
-		auto beg{i};
-		while (*i != '~') { ++i; }
-
-		len = bl::decode_field_len({beg, i});
+		std::size_t len{bl::decode_field_len({beg.i, this->i})};
 
 		// Consume the `~`.
-		++i;
-	} else {
-		len = bl::decode_bl82(c) + 1;
+		this->read_single();
+
+		return std::string(this->read(len).value());
 	}
 
-	auto beg{i};
-	i += len;
+	std::size_t len{bl::decode_bl82(this->read_single().value())};
 
-	if (len == 0 || i > v.cend()) { i = v.cend(); }
+	// Using increment operator instead of just `+ 1` in the initialization
+	// of `len` to avoid that stupid narrowing error.
+	++len;
 
-	return beg;
+	return std::string(this->read(len).value());
 }
 
-template<class type>
-static void parse_value(
-	std::string_view::const_iterator& i, std::string_view v, type& out
-) {
+double value_stream::parse_num() {
+	auto str{this->parse_str()};
+	std::string_view view{str};
+
 	double n{};
-
-	parse_value<double>(i, v, n);
-	out = n;
-}
-
-template<>
-void parse_value<
-	std::string
->(std::string_view::const_iterator& i, std::string_view v, std::string& out) {
-	auto beg{parse_value_impl(i, v)};
-	if (beg == v.cend()) { return; }
-
-	out.assign(beg, i);
-}
-
-template<>
-void parse_value<double>(
-	std::string_view::const_iterator& i, std::string_view v, double& out
-) {
-	auto beg{parse_value_impl(i, v)};
-	if (beg == v.cend()) { return; }
-
-	if (std::from_chars(beg, i, out).ec != std::errc()) {
-		out = std::numeric_limits<double>::quiet_NaN();
+	auto ec{std::from_chars(view.cbegin(), view.cend(), n).ec};
+	if (ec != std::errc()) {
+		throw std::invalid_argument(std::make_error_code(ec).message());
 	}
+
+	return n;
 }
 
-template<class first_type, class... rest_types>
-static void parse_value(
-	std::string_view::const_iterator& i, std::string_view v,
-	first_type& first, rest_types&... rest
-) {
-	parse_value(i, v, first);
-	parse_value(i, v, rest...);
+std::array<double, 3> value_stream::parse_units() {
+	std::array<double, 3> units{};
+	std::size_t axis_idx{};
+
+	while (!this->eof()) {
+		auto axis_beg{*this};
+		this->read_until(",");
+
+		std::string_view axis{axis_beg.i, this->i};
+
+		// Consume the `,`, if there was any.
+		this->read_single();
+
+		if (axis.front() == '-') {
+			units[axis_idx++] = bl::decode_units(
+				axis | std::views::take(axis.length() - 1)
+			);
+			units.back() = -units.back();
+		} else {
+			units[axis_idx++] = bl::decode_units(axis);
+		}
+	}
+
+	return units;
 }
 
-template<class... types>
-static void to_config_impl(std::string_view v, types&... outs) {
-	auto i{v.cbegin()};
-	parse_value(i, v, outs...);
-}
-
-static std::string to_value_impl(std::string const& s) {
+static std::string str_to_value(std::string const& s) {
 	if (s.empty()) {
 		// The game uses a backtick in place of the length to represent
 		// the empty string.
@@ -112,20 +108,23 @@ static std::string to_value_impl(std::string const& s) {
 	return bl::encode_bl82(s.length() - 1) + s;
 }
 
-template<class type>
-static std::string to_value_impl(type v) {
-	return to_value_impl(std::format("{}", v));
+static std::string num_to_value(double v) {
+	return str_to_value(std::format("{}", v));
 }
 
-template<>
-std::string to_value_impl<bool>(bool v) {
-	return to_value_impl<unsigned>(v);
-}
+static std::string units_to_value(std::span<double const, 3> v) {
+	std::string s{};
+	for (auto axis: v) {
+		if (axis < 0) { s += '-'; }
 
-template<class first_type, class... rest_types>
-static std::string
-to_value_impl(first_type const& first, rest_types const&... rest) {
-	return to_value_impl(first) + to_value_impl(rest...);
+		s += bl::encode_units(std::abs(axis));
+		s += ',';
+	}
+
+	// Remove the trailing `,`, if there was any.
+	if (s.back() == ',') { s.pop_back(); }
+
+	return str_to_value(s);
 }
 
 bl::delay_cfg::delay_cfg(std::string_view v) {
@@ -167,11 +166,16 @@ std::string bl::text_cfg::to_value() const {
 }
 
 bl::legacy_kill_module_cfg::legacy_kill_module_cfg(std::string_view v) {
-	to_config_impl(v, this->show_range, this->damage, this->range);
+	value_stream s{v};
+	this->show_range = s.parse_num();
+	this->damage = s.parse_num();
+	this->range = s.parse_num();
 }
 
 std::string bl::legacy_kill_module_cfg::to_value() const {
-	return to_value_impl(this->show_range, this->damage, this->range);
+	return num_to_value(this->show_range)
+		+ num_to_value(this->damage)
+		+ num_to_value(this->range);
 }
 
 bl::dip_switches_cfg::dip_switches_cfg(std::string_view v) {
@@ -183,13 +187,14 @@ std::string bl::dip_switches_cfg::to_value() const {
 }
 
 bl::eeprom_cfg::eeprom_cfg(std::string_view v) {
-	for (auto i{v.cbegin()}; i < v.cend(); i += 4) {
+	stream s{v};
+	while (!s.eof()) {
 		std::uint8_t decoded_addr{
-			bit_reverse8(decode_world_id({i, i + 2}))
+			bitrev8(decode_world_id(s.read(2).value()))
 		};
 
 		std::uint8_t decoded_val{
-			bit_reverse8(decode_world_id({i + 2, i + 4}))
+			bitrev8(decode_world_id(s.read(2).value()))
 		};
 
 		this->mem[decoded_addr] = decoded_val;
@@ -199,14 +204,9 @@ bl::eeprom_cfg::eeprom_cfg(std::string_view v) {
 std::string bl::eeprom_cfg::to_value() const {
 	std::string out{};
 
-	for (auto item: this->mem) {
-		std::string encoded_addr{
-			encode_world_id(bit_reverse8(item.first))
-		};
-
-		std::string encoded_val{
-			encode_world_id(bit_reverse8(item.second))
-		};
+	for (auto [addr, val]: this->mem) {
+		std::string encoded_addr{encode_world_id(bitrev8(addr))};
+		std::string encoded_val{encode_world_id(bitrev8(val))};
 
 		out.append(2 - encoded_addr.length(), '0');
 		out += encoded_addr;
@@ -243,21 +243,24 @@ std::string bl::block_placer_cfg::to_value() const {
 }
 
 bl::tnt_activator_cfg::tnt_activator_cfg(std::string_view v) {
-	to_config_impl(v, this->show_range, this->range);
+	value_stream s{v};
+	this->show_range = s.parse_num();
+	this->range = s.parse_num();
 }
 
 std::string bl::tnt_activator_cfg::to_value() const {
-	return to_value_impl(this->show_range, this->range);
+	return num_to_value(this->show_range) + num_to_value(this->range);
 }
 
 bl::eeprom16_cfg::eeprom16_cfg(std::string_view v) {
-	for (auto i{v.cbegin()}; i < v.cend(); i += 6) {
+	stream s{v};
+	while (!s.eof()) {
 		std::uint16_t decoded_addr{
-			bit_reverse16(decode_world_id({i, i + 3}))
+			bitrev16(decode_world_id(s.read(3).value()))
 		};
 
 		std::uint16_t decoded_val{
-			bit_reverse16(decode_world_id({i + 3, i + 6}))
+			bitrev16(decode_world_id(s.read(3).value()))
 		};
 
 		this->mem[decoded_addr] = decoded_val;
@@ -267,14 +270,9 @@ bl::eeprom16_cfg::eeprom16_cfg(std::string_view v) {
 std::string bl::eeprom16_cfg::to_value() const {
 	std::string out{};
 
-	for (auto item: this->mem) {
-		std::string encoded_addr{
-			encode_world_id(bit_reverse16(item.first))
-		};
-
-		std::string encoded_val{
-			encode_world_id(bit_reverse16(item.second))
-		};
+	for (auto [addr, val]: this->mem) {
+		std::string encoded_addr{encode_world_id(bitrev16(addr))};
+		std::string encoded_val{encode_world_id(bitrev16(val))};
 
 		out.append(3 - encoded_addr.length(), '0');
 		out += encoded_addr;
@@ -286,27 +284,30 @@ std::string bl::eeprom16_cfg::to_value() const {
 }
 
 bl::speaker_cfg::speaker_cfg(std::string_view v) {
-	std::string sound_id{};
-	to_config_impl(v, this->looped, sound_id, this->vol, this->pitch);
-
-	this->sound_id = decode_world_id(sound_id);
+	value_stream s{v};
+	this->looped = s.parse_num();
+	this->sound_id = decode_world_id(s.parse_str());
+	this->vol = s.parse_num();
+	this->pitch = s.parse_num();
 }
 
 std::string bl::speaker_cfg::to_value() const {
-	return to_value_impl(
-		this->looped, encode_world_id(this->sound_id), this->vol,
-		this->pitch
-	);
+	return num_to_value(this->looped)
+		+ str_to_value(encode_world_id(this->sound_id))
+		+ num_to_value(this->vol)
+		+ num_to_value(this->pitch);
 }
 
 bl::teleport_module_cfg::teleport_module_cfg(std::string_view v) {
-	std::string str_offset{};
-	to_config_impl(v, this->show_range, str_offset, this->range);
-	std::string_view offset{str_offset};
+	value_stream s{v};
+	this->show_range = s.parse_num();
+	std::string offset{s.parse_str()};
+	this->range = s.parse_num();
 
-	auto it{offset.cbegin()};
+	std::string_view view{offset};
+	auto it{view.cbegin()};
 	for (auto& item: this->tp_offset) {
-		auto r{std::from_chars(it, offset.cend(), item)};
+		auto r{std::from_chars(it, view.cend(), item)};
 		it = r.ptr;
 		if (r.ec != std::errc()) {
 			item = std::numeric_limits<double>::quiet_NaN();
@@ -315,57 +316,68 @@ bl::teleport_module_cfg::teleport_module_cfg(std::string_view v) {
 }
 
 std::string bl::teleport_module_cfg::to_value() const {
-	std::string tp_offset{std::format(
+	std::string offset{std::format(
 		"{} {} {}", this->tp_offset[0], this->tp_offset[1],
 		this->tp_offset[2]
 	)};
 
-	return to_value_impl(this->show_range, tp_offset, this->range);
+	return num_to_value(this->show_range)
+		+ str_to_value(offset)
+		+ num_to_value(this->range);
 }
 
 bl::legacy_player_detector_cfg::legacy_player_detector_cfg(std::string_view v) {
-	to_config_impl(v, this->show_range, this->activation_perm, this->range);
+	value_stream s{v};
+	this->show_range = s.parse_num();
+	this->activation_perm = s.parse_num();
+	this->range = s.parse_num();
 }
 
 std::string bl::legacy_player_detector_cfg::to_value() const {
-	return to_value_impl(
-		this->show_range, this->activation_perm, this->range
-	);
+	return num_to_value(this->show_range)
+		+ num_to_value(this->activation_perm)
+		+ num_to_value(this->range);
 }
 
 bl::http_transmitter_cfg::http_transmitter_cfg(std::string_view v) {
-	to_config_impl(
-		v, this->get_requests, this->get_interval, this->headers,
-		this->url
-	);
+	value_stream s{v};
+	this->get_requests = s.parse_num();
+	this->get_interval = s.parse_num();
+	this->headers = s.parse_str();
+	this->url = s.parse_str();
 }
 
 std::string bl::http_transmitter_cfg::to_value() const {
-	return to_value_impl(
-		this->get_requests, this->get_interval, this->headers, this->url
-	);
+	return num_to_value(this->get_requests)
+		+ num_to_value(this->get_interval)
+		+ str_to_value(this->headers)
+		+ str_to_value(this->url);
 }
 
 bl::legacy_keypad_cfg::legacy_keypad_cfg(std::string_view v) {
-	to_config_impl(
-		v, this->unlock_on_enter_key, this->unlocked_time,
-		this->code_digits, this->show_key_press, this->button_hold_time
-	);
+	value_stream s{v};
+	this->unlock_on_enter_key = s.parse_num();
+	this->unlocked_time = s.parse_num();
+	this->code_digits = s.parse_str();
+	this->show_key_press = s.parse_num();
+	this->button_hold_time = s.parse_num();
 }
 
 std::string bl::legacy_keypad_cfg::to_value() const {
-	return to_value_impl(
-		this->unlock_on_enter_key, this->unlocked_time,
-		this->code_digits, this->show_key_press, this->button_hold_time
-	);
+	return num_to_value(this->unlock_on_enter_key)
+		+ num_to_value(this->unlocked_time)
+		+ str_to_value(this->code_digits)
+		+ num_to_value(this->show_key_press)
+		+ num_to_value(this->button_hold_time);
 }
 
 bl::precise_randomizer_cfg::precise_randomizer_cfg(std::string_view v) {
-	to_config_impl(v, this->right_percentage);
+	value_stream s{v};
+	this->right_percentage = s.parse_num();
 }
 
 std::string bl::precise_randomizer_cfg::to_value() const {
-	return to_value_impl(this->right_percentage);
+	return num_to_value(this->right_percentage);
 }
 
 bl::buzzer_cfg::buzzer_cfg(std::string_view v) {
@@ -382,112 +394,60 @@ std::string bl::cake_cfg::to_value() const {
 	return encode_world_id(this->val);
 }
 
-static std::array<double, 3> parse_units(std::string_view v) {
-	std::array<double, 3> units{};
-	std::size_t axis_idx{};
-	auto it{v.cbegin()};
-
-	while (it != v.cend()) {
-		auto axis_beg{it};
-		while (it != v.cend() && *it != ',') { ++it; }
-
-		std::string_view axis{axis_beg, it};
-
-		// Consume the `,`, if there was any.
-		if (*it == ',') { ++it; }
-
-		if (axis.front() == '-') {
-			units[axis_idx++] = bl::decode_units(
-				axis | std::views::take(axis.length() - 1)
-			);
-			units.back() = -units.back();
-		} else {
-			units[axis_idx++] = bl::decode_units(axis);
-		}
-	}
-
-	return units;
-}
-
-static std::string create_units(std::span<double const, 3> v) {
-	std::string s{};
-	for (auto axis: v) {
-		if (axis < 0) { s += '-'; }
-
-		s += bl::encode_units(std::abs(axis));
-		s += ',';
-	}
-
-	// Remove the trailing `,`, if there was any.
-	if (s.back() == ',') { s.pop_back(); }
-
-	return s;
-}
-
 bl::kill_module_cfg::kill_module_cfg(std::string_view v) {
-	std::size_t shape{};
-	std::string size{};
-	std::string orientation{};
-	std::string offset{};
-
-	to_config_impl(
-		v, this->show_detection_boundaries, this->kill_when_touched,
-		this->damage, size, shape, orientation, offset
-	);
-
-	this->detection_size = parse_units(size);
-	this->shape_orientation = parse_units(orientation);
-	this->shape_offset = parse_units(offset);
-	this->detect_shape = decode_detection_shape(shape);
+	value_stream s{v};
+	this->show_detection_boundaries = s.parse_num();
+	this->kill_when_touched = s.parse_num();
+	this->damage = s.parse_num();
+	this->detection_size = s.parse_units();
+	this->detect_shape = decode_detection_shape(s.parse_num());
+	this->shape_orientation = s.parse_units();
+	this->shape_offset = s.parse_units();
 }
 
 std::string bl::kill_module_cfg::to_value() const {
-	return to_value_impl(
-		this->show_detection_boundaries, this->kill_when_touched,
-		this->damage, create_units(this->detection_size),
-		get_detection_shape_traits(this->detect_shape).encoded,
-		create_units(this->shape_orientation),
-		create_units(this->shape_offset)
-	);
+	return num_to_value(this->show_detection_boundaries)
+		+ num_to_value(this->kill_when_touched)
+		+ num_to_value(this->damage)
+		+ units_to_value(this->detection_size)
+		+ num_to_value(
+			get_detection_shape_traits(this->detect_shape).encoded
+		)
+		+ units_to_value(this->shape_orientation)
+		+ units_to_value(this->shape_offset);
 }
 
 bl::player_detector_cfg::player_detector_cfg(std::string_view v) {
-	std::size_t shape{};
-	std::string size{};
-	std::string orientation{};
-	std::string offset{};
-
-	to_config_impl(
-		v, this->show_detection_boundaries, this->activation_sel, size,
-		shape, orientation, offset
-	);
-
-	this->detection_size = parse_units(size);
-	this->shape_orientation = parse_units(orientation);
-	this->shape_offset = parse_units(offset);
-	this->detect_shape = decode_detection_shape(shape);
+	value_stream s{v};
+	this->show_detection_boundaries = s.parse_num();
+	this->activation_sel = s.parse_str();
+	this->detection_size = s.parse_units();
+	this->detect_shape = decode_detection_shape(s.parse_num());
+	this->shape_orientation = s.parse_units();
+	this->shape_offset = s.parse_units();
 }
 
 std::string bl::player_detector_cfg::to_value() const {
-	return to_value_impl(
-		this->show_detection_boundaries, this->activation_sel,
-		create_units(this->detection_size),
-		get_detection_shape_traits(this->detect_shape).encoded,
-		create_units(this->shape_orientation),
-		create_units(this->shape_offset)
-	);
+	return num_to_value(this->show_detection_boundaries)
+		+ str_to_value(this->activation_sel)
+		+ units_to_value(this->detection_size)
+		+ num_to_value(
+			get_detection_shape_traits(this->detect_shape).encoded
+		)
+		+ units_to_value(this->shape_orientation)
+		+ units_to_value(this->shape_offset);
 }
 
 // Note: The `Code_Digits` member has to be cleared because later we'll be
 // appending to it without destroying its old contents, which is the default
 // value of "1234".
 bl::keypad_cfg::keypad_cfg(std::string_view v): code_digits{} {
-	std::string code{};
-
-	to_config_impl(
-		v, this->unlock_on_enter_key, this->unlocked_time, code,
-		this->show_key_press, this->button_hold_time
-	);
+	value_stream s{v};
+	this->unlock_on_enter_key = s.parse_num();
+	this->unlocked_time = s.parse_num();
+	std::string code{s.parse_str()};
+	this->show_key_press = s.parse_num();
+	this->button_hold_time = s.parse_num();
 
 	auto it{code.cbegin()};
 	while (it != code.cend()) {
@@ -524,8 +484,9 @@ std::string bl::keypad_cfg::to_value() const {
 
 	if (code.back() == ':') { code.pop_back(); }
 
-	return to_value_impl(
-		this->unlock_on_enter_key, this->unlocked_time, code,
-		this->show_key_press, this->button_hold_time
-	);
+	return num_to_value(this->unlock_on_enter_key)
+		+ num_to_value(this->unlocked_time)
+		+ str_to_value(code)
+		+ num_to_value(this->show_key_press)
+		+ num_to_value(this->button_hold_time);
 }
