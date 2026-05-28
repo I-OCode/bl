@@ -153,4 +153,40 @@ And for the rest of the incoming wires:
 
 You thought it was over? Not yet, buddy. Values are their own little world too.
 
-TODO: explain value format
+Each block has its own unique way of encoding their values, but there are a few
+common patterns.
+
+Notably for blocks that have configurations, like your kill modules or player
+detectors or speakers, the value consists of any number of fields (unofficial
+term). Each field has the following format:
+
+```text
+len-min-one contents
+```
+
+`len-min-one` is a number encoded in the BL82 character set (again, unofficial
+term). It represents the length of `contents` minus 1. Therefore, an encoded
+`len-min-one` of `0` signals that `contents` is 1 character long.
+
+For the case where `contents` has zero length, a `` ` `` is used in place of
+`len-min-one`.
+
+Here's a funny quirk: in the BL82 character set, the exclaimation mark appears
+*twice*. That's right. Both 62 and 78 are encoded to `!`. But which number is
+picked when decoding a `!`? The answer is 78. This means that if you have a 63
+character long string, Build Logic will treat it as a 79 character long string
+therefore causing the game to read data further than the string and into the
+rest of the value. The game does not read further than the end of the value
+though, so no game-breaking exploits unfortunately.
+
+Another quirk: in block configurations that have a field in which you can type
+arbitrary text like HTTP transmitters, you can type `/=` or `/^` and the game
+will treat each of them as being 2 characters long. But when the game loads the
+block, it will remove the `/`s in the `/=`s and `/^`s because it thinks that
+it's a value escape. Therefore you have a buggy configuration where the field
+length is longer than the actual field content. Just like the previous quirk I
+mentioned, this causes the game to read data further than the field and into the
+rest of the value. But again, unfortunately, the game does not go further than
+the end of the value.
+
+TODO: explain other value encoding formats

@@ -12,7 +12,7 @@ namespace bl {
 	// See https://semver.org/
 
 	inline constexpr unsigned major{0}; ///< Incompatible API changes.
-	inline constexpr unsigned minor{3}; ///< Backwards-compatible changes.
+	inline constexpr unsigned minor{4}; ///< Backwards-compatible changes.
 	inline constexpr unsigned patch{0}; ///< Backwards-compatible
 					    ///< implementation changes (usually
 					    ///< bug fixes, and API stays the
@@ -41,6 +41,15 @@ namespace bl {
 	///
 	///   There may be new restricted blocks, but I don't (and can't) know
 	///   of them.
+	///
+	///   Nevermind you can see some restricted blocks in the block limiter
+	///   search menu so there are also these blocks:
+	///
+	///   - Block Painter
+	///   - Shared EEPROM
+	///   - Checkered Block
+	///
+	///   There're probably more though.
 	enum class block_type {
 		// Fun fact about why these enum names begin with `e`:
 		//
@@ -249,8 +258,11 @@ namespace bl {
 	};
 
 	/// @brief Block materials.
-	/// @remark `eCobblestone` and `eAerogel` aren't listed in the game's
-	///         material selector, so I had to improvise the names myself.
+	/// @note
+	///   `eCobblestone` and `eAerogel` aren't listed in the game's material
+	///   selector, so I had to improvise the names myself. A material named
+	///   "Cobblestone" does exist in the world baseplate material selector
+	///   though, so I guess the improvisation worked out for that at least.
 	enum class material {
 		eDefault,	 ///< Default
 		eGlass,		 ///< Glass
@@ -271,7 +283,7 @@ namespace bl {
 		eSlate,		 ///< Slate
 		eCorroded_Metal, ///< Corroded Metal
 		eForce_Field,	 ///< Force Field
-		eAerogel	 ///< Air
+		eAerogel	 ///< Aerogel
 	};
 
 	/// @brief Configurations of the `Delay` block.
@@ -1101,7 +1113,84 @@ namespace bl::cake {
 
 /// @brief AND Gate
 namespace bl::con::eAND_Gate {
-	inline constexpr char A{'1'}; ///< First input.
-	inline constexpr char B{'2'}; ///< Second input.
-	inline constexpr char Q{'3'}; ///< Output.
+	inline constexpr char a{'1'}; ///< First input.
+	inline constexpr char b{'2'}; ///< Second input.
+	inline constexpr char q{'3'}; ///< Output.
+};
+
+/// @brief NAND Gate
+namespace bl::con::eNAND_Gate {
+	inline constexpr char a{'1'}; ///< First input.
+	inline constexpr char b{'2'}; ///< Second input.
+	inline constexpr char q{'3'}; ///< Output.
+};
+
+/// @brief NOR Gate
+namespace bl::con::eNOR_Gate {
+	inline constexpr char a{'1'}; ///< First input.
+	inline constexpr char b{'2'}; ///< Second input.
+	inline constexpr char q{'3'}; ///< Output.
+};
+
+/// @brief NOT Gate
+namespace bl::con::eNOT_Gate {
+	inline constexpr char a{'1'}; ///< Input.
+	inline constexpr char q{'2'}; ///< Output.
+};
+
+/// @brief OR Gate
+namespace bl::con::eOR_Gate {
+	inline constexpr char a{'1'}; ///< First input.
+	inline constexpr char b{'2'}; ///< Second input.
+	inline constexpr char q{'3'}; ///< Output.
+};
+
+/// @brief Splitter
+namespace bl::con::eSplitter {
+	inline constexpr char a{'1'}; ///< Input.
+	inline constexpr char q{'2'}; ///< First output.
+	inline constexpr char r{'3'}; ///< Second output.
+};
+
+/// @brief XNOR Gate
+namespace bl::con::eXNOR_Gate {
+	inline constexpr char a{'1'}; ///< First input.
+	inline constexpr char b{'2'}; ///< Second input.
+	inline constexpr char q{'3'}; ///< Output.
+};
+
+/// @brief XOR Gate
+namespace bl::con::eXOR_Gate {
+	inline constexpr char a{'1'}; ///< First input.
+	inline constexpr char b{'2'}; ///< Second input.
+	inline constexpr char q{'3'}; ///< Output.
+};
+
+/// @brief Counter
+namespace bl::con::eCounter {
+	inline constexpr char inc_out{'1'}; ///< Carry-out/overflow output.
+	inline constexpr char dec_out{'2'}; ///< Underflow output.
+	inline constexpr char inc_in{'3'}; ///< Increment input.
+	inline constexpr char dec_in{'4'}; ///< Decrement input.
+	inline constexpr char q0{'5'}; ///< Output[0].
+	inline constexpr char q1{'6'}; ///< Output[1].
+	inline constexpr char q2{'7'}; ///< Output[2].
+	inline constexpr char q3{'8'}; ///< Output[3].
+	inline constexpr char reset{'9'}; ///< Reset input.
+};
+
+/// @brief 8 Bit Shifter Counter
+namespace bl::con::e8_Bit_Shifter_Counter {
+	inline constexpr char left{'1'}; ///< Increment/shift left input.
+	inline constexpr char reset{'2'}; ///< Reset input.
+	inline constexpr char output{'3'}; ///< Input for whether to output.
+	inline constexpr char right{'4'}; ///< Decrement/shift right input.
+	inline constexpr char q7{'5'}; ///< Output[7].
+	inline constexpr char q6{'6'}; ///< Output[6].
+	inline constexpr char q5{'7'}; ///< Output[5].
+	inline constexpr char q4{'8'}; ///< Output[4].
+	inline constexpr char q3{'9'}; ///< Output[3].
+	inline constexpr char q2{'a'}; ///< Output[2].
+	inline constexpr char q1{'b'}; ///< Output[1].
+	inline constexpr char q0{'c'}; ///< Output[0].
 };

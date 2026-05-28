@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+- Changed `bl::con::eAND_Gate`'s members to lowercase.
+- Added the connectors of 9 more blocks to `bl::con`.
+- More work on the docs.
+
 ## 0.3.0
 
 - Made the code in `cfg.cpp` a little less crap.
