@@ -12,7 +12,7 @@ namespace bl {
 	// See https://semver.org/
 
 	inline constexpr unsigned major{0}; ///< Incompatible API changes.
-	inline constexpr unsigned minor{4}; ///< Backwards-compatible changes.
+	inline constexpr unsigned minor{5}; ///< Backwards-compatible changes.
 	inline constexpr unsigned patch{0}; ///< Backwards-compatible
 					    ///< implementation changes (usually
 					    ///< bug fixes, and API stays the
@@ -1007,16 +1007,6 @@ namespace bl {
 	/// @returns An unsigned integer.
 	std::size_t decode_world_id(std::string_view v);
 
-	/// @brief Encode a configuration field length.
-	/// @param[in] v An unsigned integer.
-	/// @returns A string.
-	std::string encode_field_len(std::size_t v);
-
-	/// @brief Decode a configuration field length.
-	/// @param[in] v A string.
-	/// @returns An unsigned integer.
-	std::size_t decode_field_len(std::string_view v);
-
 	/// @brief Encode units.
 	/// @param[in] v An unsigned integer.
 	/// @returns A string.
@@ -1045,11 +1035,6 @@ namespace bl {
 	/// @returns A character.
 	char encode_bl71(std::uint8_t v);
 
-	/// @brief Encode according to the BL72 character set.
-	/// @param[in] v An unsigned integer.
-	/// @returns A character.
-	char encode_bl72(std::uint8_t v);
-
 	/// @brief Encode according to the BL75 character set.
 	/// @param[in] v An unsigned integer.
 	/// @returns A character.
@@ -1074,11 +1059,6 @@ namespace bl {
 	/// @param[in] v A character.
 	/// @returns An unsigned integer.
 	std::uint8_t decode_bl71(char v);
-
-	/// @brief Opposite of `bl::encode_bl72()`.
-	/// @param[in] v A character.
-	/// @returns An unsigned integer.
-	std::uint8_t decode_bl72(char v);
 
 	/// @brief Opposite of `bl::encode_bl75()`.
 	/// @param[in] v A character.

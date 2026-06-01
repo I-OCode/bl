@@ -90,7 +90,8 @@ though. It is base-71. The bl library provides the `bl::encode_bl71()` and
 
 The character set for these base-71 digits is called "BL71" which stands for
 "Build Logic (character set) 71", for lack of a better name. Note that the name
-"BL71" is not official; I coined it myself.
+"BL71" is not official; I coined it myself. You'll see this BL*xx* pattern being
+used in the rest of the docs and in the source code.
 
 World IDs come after `value` (or `basic-encoding` if `value` is not present) and
 begin with the `=` character, like so:
@@ -157,14 +158,14 @@ Each block has its own unique way of encoding their values, but there are a few
 common patterns.
 
 Notably for blocks that have configurations, like your kill modules or player
-detectors or speakers, the value consists of any number of fields (unofficial
+detectors or speakers, the value consists of any number of *fields* (unofficial
 term). Each field has the following format:
 
 ```text
 len-min-one contents
 ```
 
-`len-min-one` is a number encoded in the BL82 character set (again, unofficial
+`len-min-one` is a number encoded in the *BL82* character set (again, unofficial
 term). It represents the length of `contents` minus 1. Therefore, an encoded
 `len-min-one` of `0` signals that `contents` is 1 character long.
 
@@ -188,5 +189,17 @@ length is longer than the actual field content. Just like the previous quirk I
 mentioned, this causes the game to read data further than the field and into the
 rest of the value. But again, unfortunately, the game does not go further than
 the end of the value.
+
+Anyways, it's over. Right? No. There's still a special case where `len-min-one`
+is too big to fit in the BL82 character set. What to do then? Well, this
+alternative format is used for fields:
+
+```text
+"|" len "~" contents
+```
+
+Where `len` represents the length of `contents`. `len` is encoded in the same
+format as world IDs. I personally call the `len` part surrounded by `|` and `~`
+the *extended field length*.
 
 TODO: explain other value encoding formats

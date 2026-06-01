@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Removed `bl::encode_bl72()`, `bl::decode_bl72()`, `bl::encode_field_len()`,
+  and `bl::decode_field_len()`.
+- Fixed extended value field lengths. Previously I thought there was a `#` in
+  the charset used for extended value field lengths but no such `#` is actually
+  used in the game.
+- More work done on `DOCS.md`.
+
 ## 0.4.0
 
 - Changed `bl::con::eAND_Gate`'s members to lowercase.

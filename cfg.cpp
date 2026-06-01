@@ -35,7 +35,7 @@ std::string value_stream::parse_str() {
 		stream beg{*this};
 		this->read_until("~");
 
-		std::size_t len{bl::decode_field_len({beg.i, this->i})};
+		std::size_t len{bl::decode_world_id({beg.i, this->i})};
 
 		// Consume the `~`.
 		this->read_single();
@@ -102,7 +102,7 @@ static std::string str_to_value(std::string const& s) {
 	// uses an alternative format where `|` and `~` are the beginning and
 	// ending delimiters, respectively.
 	if (s.length() > 82) {
-		return '|' + bl::encode_field_len(s.length()) + '~';
+		return '|' + bl::encode_world_id(s.length()) + '~';
 	}
 
 	return bl::encode_bl82(s.length() - 1) + s;

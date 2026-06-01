@@ -87,29 +87,6 @@ std::size_t bl::decode_world_id(std::string_view v) {
 	return r;
 }
 
-std::string bl::encode_field_len(std::size_t v) {
-	std::string s{};
-
-	do {
-		auto r{v % 72};
-		v /= 72;
-		s += encode_bl72(r);
-	} while (v != 0);
-
-	std::ranges::reverse(s);
-	return s;
-}
-
-std::size_t bl::decode_field_len(std::string_view v) {
-	std::size_t r{};
-	for (auto c: v) {
-		r *= 72;
-		r += decode_bl72(c);
-	}
-
-	return r;
-}
-
 std::string bl::encode_units(std::size_t v) {
 	std::string s{};
 
@@ -160,23 +137,13 @@ char bl::encode_bl64(std::uint8_t v) {
 }
 
 char bl::encode_bl71(std::uint8_t v) {
-	if (v >= 62 && v <= 70) {
-		return "!@$%?&<()"[v - 62];
-	} else {
+	if (v >= 0 && v <= 61) {
 		return encode62(v);
+	} else if (v >= 62 && v <= 70) {
+		return "!@$%?&<()"[v - 62];
 	}
 
 	throw std::out_of_range("'v' not in [0, 70]");
-}
-
-char bl::encode_bl72(std::uint8_t v) {
-	if (v >= 62 && v <= 71) {
-		return "!@$%?&#<()"[v - 62];
-	} else {
-		return encode62(v);
-	}
-
-	throw std::out_of_range("'v' not in [0, 71]");
 }
 
 char bl::encode_bl75(std::uint8_t v) {
@@ -192,11 +159,11 @@ char bl::encode_bl75(std::uint8_t v) {
 }
 
 char bl::encode_bl82(std::uint8_t v) {
-	if (v >= 62 && v <= 81) {
+	if (v >= 0 && v <= 61) {
+		return encode62(v);
+	} else if (v >= 62 && v <= 81) {
 		// Notice how there are two `!`s here.
 		return "!@$%?&#<()*+-/:,!._="[v - 62];
-	} else {
-		return encode62(v);
 	}
 
 	throw std::out_of_range("'v' not in [0, 81]");
@@ -239,28 +206,11 @@ std::uint8_t bl::decode_bl71(char v) {
 	case '<': return 68;
 	case '(': return 69;
 	case ')': return 70;
-	default: return decode62(v);
+	default: try { return decode62(v);
+		} catch (...) {}
 	}
 
 	throw std::out_of_range("'v' not in [0-9a-zA-Z!@$%?&<()]");
-}
-
-std::uint8_t bl::decode_bl72(char v) {
-	switch (v) {
-	// case '!': return 62;
-	case '@': return 63;
-	case '$': return 64;
-	case '%': return 65;
-	case '?': return 66;
-	case '&': return 67;
-	case '#': return 68;
-	case '<': return 69;
-	case '(': return 70;
-	case ')': return 71;
-	default: return decode62(v);
-	}
-
-	throw std::out_of_range("'v' not in [0-9a-zA-Z@$%?&#<()]");
 }
 
 std::uint8_t bl::decode_bl75(char v) {
@@ -322,7 +272,8 @@ std::uint8_t bl::decode_bl82(char v) {
 	case '.': return 79;
 	case '_': return 80;
 	case '=': return 81;
-	default: return decode62(v);
+	default: try { return decode62(v);
+		} catch (...) {}
 	}
 
 	throw std::out_of_range("'v' not in [0-9a-zA-Z@$%?&#<()*+-/:,!._=]");
