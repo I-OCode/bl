@@ -14,6 +14,16 @@ public:
 	char to_con{};
 };
 
+static auto gen_world_ids(bl::emplacement const* em) {
+	// World IDs don't *have* to begin at 1.
+	std::size_t world_id{};
+
+	std::map<bl::unique_id, std::size_t> world_ids{};
+	for (auto const& item: em->blks) { world_ids[item.first] = world_id++; }
+
+	return world_ids;
+}
+
 bl::emplacement::emplacement(std::string_view src) {
 	stream main{src};
 	std::map<std::size_t, unique_id> ids{};
@@ -207,45 +217,6 @@ bl::emplacement::emplacement(std::string_view src) {
 				wire.from_con, wire.to_con}
 		);
 	}
-}
-
-bl::unique_id bl::emplacement::place(block const& blk) {
-	return this->blks.emplace(unique_id::create(), blk).first->first;
-}
-
-bl::unique_id bl::emplacement::place(block&& blk) {
-	return this->blks.emplace(unique_id::create(), blk).first->first;
-}
-
-bl::unique_id bl::emplacement::connect(block_wire const& wire) {
-	return this->wires.emplace(unique_id::create(), wire).first->first;
-}
-
-bl::unique_id bl::emplacement::connect(block_wire&& wire) {
-	return this->wires.emplace(unique_id::create(), wire).first->first;
-}
-
-std::size_t bl::emplacement::remove(unique_id const& blk) noexcept {
-	return this->blks.erase(blk);
-}
-
-std::size_t bl::emplacement::disconnect(unique_id const& wire) noexcept {
-	return this->wires.erase(wire);
-}
-
-void bl::emplacement::clear() noexcept {
-	this->blks.clear();
-	this->wires.clear();
-}
-
-static auto gen_world_ids(bl::emplacement const* em) {
-	// World IDs don't *have* to begin at 1.
-	std::size_t world_id{};
-
-	std::map<bl::unique_id, std::size_t> world_ids{};
-	for (auto const& item: em->blks) { world_ids[item.first] = world_id++; }
-
-	return world_ids;
 }
 
 std::string bl::emplacement::save() const {

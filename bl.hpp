@@ -13,7 +13,7 @@ namespace bl {
 
 	inline constexpr unsigned major{0};
 	inline constexpr unsigned minor{6};
-	inline constexpr unsigned patch{0};
+	inline constexpr unsigned patch{1};
 
 	/// @brief
 	///   Namespace dedicated to connectors, for convenience. This way you
@@ -874,29 +874,48 @@ namespace bl {
 		/// @brief Create a new block.
 		/// @param[in] blk The block.
 		/// @returns The ID of the newly-created block.
-		unique_id place(block const& blk);
-		unique_id place(block&& blk);
+		unique_id place(block const& blk) {
+			return this->blks.emplace(unique_id::create(), blk)
+				.first->first;
+		}
+
+		/// @brief Create a new block.
+		/// @param[in] blk The block.
+		/// @returns The ID of the newly-created block.
+		unique_id place(block&& blk) {
+			return this->blks.emplace(unique_id::create(), blk)
+				.first->first;
+		}
 
 		/// @brief Connect two blocks with a wire.
 		/// @param[in] wire The wire.
 		/// @returns The ID of the newly-created wire.
-		unique_id connect(block_wire const& wire);
-		unique_id connect(block_wire&& wire);
+		unique_id connect(block_wire const& wire) {
+			return this->wires.emplace(unique_id::create(), wire)
+				.first->first;
+		}
 
 		/// @brief Remove a block.
 		/// @param[in] blk The block `unique_id` to remove.
 		/// @returns
 		///   The number of blocks with the unique ID `blk` removed.
-		std::size_t remove(unique_id const& blk) noexcept;
+		std::size_t remove(unique_id const& blk) noexcept {
+			return this->blks.erase(blk);
+		}
 
 		/// @brief Remove a wire.
 		/// @param[in] wire The wire `unique_id` to remove.
 		/// @returns
 		///   The number of wires with the unique ID `wire` removed.
-		std::size_t disconnect(unique_id const& wire) noexcept;
+		std::size_t disconnect(unique_id const& wire) noexcept {
+			return this->wires.erase(wire);
+		}
 
 		/// @brief Remove all blocks and wires.
-		void clear() noexcept;
+		void clear() noexcept {
+			this->blks.clear();
+			this->wires.clear();
+		}
 
 		std::string save() const;
 	};

@@ -4,6 +4,13 @@
 #include <limits>
 #include <ranges>
 
+class value_stream: public stream {
+public:
+	std::string parse_str();
+	double parse_num();
+	std::array<double, 3> parse_units();
+};
+
 static std::uint8_t bitrev8(std::uint8_t v) {
 	// LUT for reversing the bits of a 4-bit nibble.
 	std::array rev4{
@@ -18,12 +25,41 @@ static std::uint16_t bitrev16(std::uint16_t v) {
 	return bitrev8(v & 0xFF) << 8 | bitrev8(v >> 8);
 }
 
-class value_stream: public stream {
-public:
-	std::string parse_str();
-	double parse_num();
-	std::array<double, 3> parse_units();
-};
+static std::string str_to_value(std::string const& s) {
+	if (s.empty()) {
+		// The game uses a backtick in place of the length to represent
+		// the empty string.
+		return "`";
+	}
+
+	// If the length is too long to fit in the BL82 charset then the game
+	// uses an alternative format where `|` and `~` are the beginning and
+	// ending delimiters, respectively.
+	if (s.length() > 82) {
+		return '|' + bl::encode_world_id(s.length()) + '~';
+	}
+
+	return bl::encode_bl82(s.length() - 1) + s;
+}
+
+static std::string num_to_value(double v) {
+	return str_to_value(std::format("{}", v));
+}
+
+static std::string units_to_value(std::span<double const, 3> v) {
+	std::string s{};
+	for (auto axis: v) {
+		if (axis < 0) { s += '-'; }
+
+		s += bl::encode_units(std::abs(axis));
+		s += ',';
+	}
+
+	// Remove the trailing `,`, if there was any.
+	if (s.back() == ',') { s.pop_back(); }
+
+	return str_to_value(s);
+}
 
 std::string value_stream::parse_str() {
 	if (this->peek_single() == '`') { return ""; }
@@ -89,42 +125,6 @@ std::array<double, 3> value_stream::parse_units() {
 	}
 
 	return units;
-}
-
-static std::string str_to_value(std::string const& s) {
-	if (s.empty()) {
-		// The game uses a backtick in place of the length to represent
-		// the empty string.
-		return "`";
-	}
-
-	// If the length is too long to fit in the BL82 charset then the game
-	// uses an alternative format where `|` and `~` are the beginning and
-	// ending delimiters, respectively.
-	if (s.length() > 82) {
-		return '|' + bl::encode_world_id(s.length()) + '~';
-	}
-
-	return bl::encode_bl82(s.length() - 1) + s;
-}
-
-static std::string num_to_value(double v) {
-	return str_to_value(std::format("{}", v));
-}
-
-static std::string units_to_value(std::span<double const, 3> v) {
-	std::string s{};
-	for (auto axis: v) {
-		if (axis < 0) { s += '-'; }
-
-		s += bl::encode_units(std::abs(axis));
-		s += ',';
-	}
-
-	// Remove the trailing `,`, if there was any.
-	if (s.back() == ',') { s.pop_back(); }
-
-	return str_to_value(s);
 }
 
 bl::delay_cfg::delay_cfg(std::string_view v) {

@@ -96,7 +96,8 @@ bl::get_detection_shape_traits(detection_shape shape) {
 bl::detection_shape bl::decode_detection_shape(std::size_t v) {
 	static trait_lookup_db<
 		detection_shape, detection_shape_traits, std::size_t,
-		std::size_t, &bl::detection_shape_traits::encoded, get_detection_shape_db
+		std::size_t, &bl::detection_shape_traits::encoded,
+		get_detection_shape_db
 	>
 		db{};
 

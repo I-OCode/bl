@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.1
+
+- Removed the `bl::emplacement::connect(bl::block_wire&&)` overload.
+- Made the `place()`, `connect()`, `remove()`, `disconnect()`, and `clear()`
+  methods of `bl::emplacement` inline.
+
+This was a patch version bump because the changes were backward-compatible and
+no new functionality was added.
+
 ## 0.6.0
 
 - Tweaked the `detection_size` default member initializer of
