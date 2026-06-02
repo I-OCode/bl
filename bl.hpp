@@ -11,45 +11,16 @@
 namespace bl {
 	// See https://semver.org/
 
-	inline constexpr unsigned major{0}; ///< Incompatible API changes.
-	inline constexpr unsigned minor{5}; ///< Backwards-compatible changes.
-	inline constexpr unsigned patch{0}; ///< Backwards-compatible
-					    ///< implementation changes (usually
-					    ///< bug fixes, and API stays the
-					    ///< same).
+	inline constexpr unsigned major{0};
+	inline constexpr unsigned minor{6};
+	inline constexpr unsigned patch{0};
 
 	/// @brief
 	///   Namespace dedicated to connectors, for convenience. This way you
 	///   can type `bl::con::eAND_Gate::A` instead of `'1'`.
 	namespace con {};
 
-	/// @brief
-	///   Types of blocks. There are some blocks that are not listed in the
-	///   game but can be placed, like `Erreur` and `_Legacy Keypad`.
-	///   However there are also blocks that can't be placed at all, even if
-	///   you know its encoded name. These are restricted and you can only
-	///   place them if you get permission from Tomtom.
-	/// @note
-	///   In the past you could see every block, restricted or not, in the
-	///   block search menu if you left the search box empty. So these are
-	///   the restricted blocks that I'm aware of:
-	///
-	///   - Loki Spawner
-	///   - Junction Block
-	///   - Physics Block
-	///   - Connector Block
-	///
-	///   There may be new restricted blocks, but I don't (and can't) know
-	///   of them.
-	///
-	///   Nevermind you can see some restricted blocks in the block limiter
-	///   search menu so there are also these blocks:
-	///
-	///   - Block Painter
-	///   - Shared EEPROM
-	///   - Checkered Block
-	///
-	///   There're probably more though.
+	/// @brief Types of blocks.
 	enum class block_type {
 		// Fun fact about why these enum names begin with `e`:
 		//
@@ -763,8 +734,9 @@ namespace bl {
 		bool show_detection_boundaries{}; ///< Show Detection Boundaries
 		bool kill_when_touched{};	  ///< Kill When Touched
 		double damage{25.0};		  ///< Damages
-		std::array<double, 3> detection_size{}; ///< Detection Size in
-							///< Blocks
+		std::array<double, 3> detection_size{
+			15.0, 15.0, 15.0
+		}; ///< Detection Size in Blocks
 		detection_shape detect_shape{
 			detection_shape::eSphere
 		}; ///< Detection Shape
@@ -796,8 +768,9 @@ namespace bl {
 	public:
 		bool show_detection_boundaries{}; ///< Show Detection Boundaries
 		std::string activation_sel{"@perm>=2"}; ///< Activation Selector
-		std::array<double, 3> detection_size{}; ///< Detection Size in
-							///< Blocks
+		std::array<double, 3> detection_size{
+			15.0, 15.0, 15.0
+		}; ///< Detection Size in Blocks
 		detection_shape detect_shape{
 			detection_shape::eSphere
 		}; ///< Detection Shape
@@ -842,13 +815,13 @@ namespace bl {
 	/// @brief Represents the saved state of a block.
 	class block {
 	public:
-		std::string value{}; ///< Value.
-		block_type type{};   ///< Type.
-		material mat{};	     ///< Material.
-		vec3 pos{};	     ///< Position.
-		vec3 color{};	     ///< Color.
-		rotation rot{};	     ///< Rotation.
-		bool activated{};    ///< Activated-ness.
+		std::string value{};		  ///< Value.
+		block_type type{};		  ///< Type.
+		material mat{material::eDefault}; ///< Material.
+		vec3 pos{};			  ///< Position.
+		vec3 color{255};		  ///< Color.
+		rotation rot{};			  ///< Rotation.
+		bool activated{};		  ///< Activated-ness.
 	};
 
 	/// @brief
@@ -1150,27 +1123,27 @@ namespace bl::con::eXOR_Gate {
 namespace bl::con::eCounter {
 	inline constexpr char inc_out{'1'}; ///< Carry-out/overflow output.
 	inline constexpr char dec_out{'2'}; ///< Underflow output.
-	inline constexpr char inc_in{'3'}; ///< Increment input.
-	inline constexpr char dec_in{'4'}; ///< Decrement input.
-	inline constexpr char q0{'5'}; ///< Output[0].
-	inline constexpr char q1{'6'}; ///< Output[1].
-	inline constexpr char q2{'7'}; ///< Output[2].
-	inline constexpr char q3{'8'}; ///< Output[3].
-	inline constexpr char reset{'9'}; ///< Reset input.
+	inline constexpr char inc_in{'3'};  ///< Increment input.
+	inline constexpr char dec_in{'4'};  ///< Decrement input.
+	inline constexpr char q0{'5'};	    ///< Output[0].
+	inline constexpr char q1{'6'};	    ///< Output[1].
+	inline constexpr char q2{'7'};	    ///< Output[2].
+	inline constexpr char q3{'8'};	    ///< Output[3].
+	inline constexpr char reset{'9'};   ///< Reset input.
 };
 
 /// @brief 8 Bit Shifter Counter
 namespace bl::con::e8_Bit_Shifter_Counter {
-	inline constexpr char left{'1'}; ///< Increment/shift left input.
-	inline constexpr char reset{'2'}; ///< Reset input.
+	inline constexpr char left{'1'};   ///< Increment/shift left input.
+	inline constexpr char reset{'2'};  ///< Reset input.
 	inline constexpr char output{'3'}; ///< Input for whether to output.
-	inline constexpr char right{'4'}; ///< Decrement/shift right input.
-	inline constexpr char q7{'5'}; ///< Output[7].
-	inline constexpr char q6{'6'}; ///< Output[6].
-	inline constexpr char q5{'7'}; ///< Output[5].
-	inline constexpr char q4{'8'}; ///< Output[4].
-	inline constexpr char q3{'9'}; ///< Output[3].
-	inline constexpr char q2{'a'}; ///< Output[2].
-	inline constexpr char q1{'b'}; ///< Output[1].
-	inline constexpr char q0{'c'}; ///< Output[0].
+	inline constexpr char right{'4'};  ///< Decrement/shift right input.
+	inline constexpr char q7{'5'};	   ///< Output[7].
+	inline constexpr char q6{'6'};	   ///< Output[6].
+	inline constexpr char q5{'7'};	   ///< Output[5].
+	inline constexpr char q4{'8'};	   ///< Output[4].
+	inline constexpr char q3{'9'};	   ///< Output[3].
+	inline constexpr char q2{'a'};	   ///< Output[2].
+	inline constexpr char q1{'b'};	   ///< Output[1].
+	inline constexpr char q0{'c'};	   ///< Output[0].
 };

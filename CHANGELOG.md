@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0
+
+- Tweaked the `detection_size` default member initializer of
+  `bl::kill_module_cfg` and `bl::player_detector_cfg` to be
+  `{15.0, 15.0, 15.0}`.
+- Tweaked the `mat` and `color` default member initializers of `bl::block` to be
+  `bl::material::eDefault` and `bl::vec3(255)` respectively.
+- Tweaked `DOCS.md`.
+
 ## 0.5.0
 
 - Removed `bl::encode_bl72()`, `bl::decode_bl72()`, `bl::encode_field_len()`,

@@ -39,6 +39,33 @@ extended the encoded name format with the special characters `#` and `%`. When
 the savestring decoder finds one of these characters, it treats the following
 character as being part of the encoded name.
 
+There are some blocks that are not listed in the build tool but can be placed
+using other methods, like `Erreur` and the block names beginning with `_Legacy`.
+However there are some unlisted blocks that can't be placed at all. These are
+restricted blocks.
+
+In the past you could see every block, restricted or not, in the block search
+menu if you left the search box empty. Now that's not possible but the block
+limiter search menu shows (some) restricted blocks, so I'm also aware of these
+unlisted blocks:
+
+- Loki Spawner
+- Junction Block
+- Physics Block
+- Connector Block
+- Block Painter
+- Shared EEPROM
+- Checkered Block
+
+There're probably more though. Also, I don't know what the encoded names of
+these restricted blocks are, because well, you can't place them.
+
+Restricted blocks have the name `e_unknown_XXX_` in `bl::block_type`, where
+`XXX` is their block ID. The reason why I didn't use names like `eLoki_Spawner`
+or `eJunction_Block` is that I have no idea which restricted block corresponds
+to which block ID. Technically the enumerator values don't strictly have to
+correspond to block IDs, but I wanted to be consistent.
+
 ### Encoded positions, colors, and rotations
 
 The trouble is that I kind of forgot/don't fully understand how the encoding
