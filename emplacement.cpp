@@ -18,7 +18,7 @@ static auto gen_world_ids(bl::emplacement const* em) {
 	// World IDs don't *have* to begin at 1.
 	std::size_t world_id{};
 
-	std::map<bl::unique_id, std::size_t> world_ids{};
+	std::unordered_map<bl::unique_id, std::size_t> world_ids{};
 	for (auto const& item: em->blks) { world_ids[item.first] = world_id++; }
 
 	return world_ids;
@@ -26,7 +26,7 @@ static auto gen_world_ids(bl::emplacement const* em) {
 
 bl::emplacement::emplacement(std::string_view src) {
 	stream main{src};
-	std::map<std::size_t, unique_id> ids{};
+	std::unordered_map<std::size_t, unique_id> ids{};
 	std::vector<pending_wire> pending_wires{};
 
 	while (!main.eof()) {

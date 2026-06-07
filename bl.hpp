@@ -1,9 +1,9 @@
 #pragma once
 
+#include <bitset>
 #include <cstdint>
-#include <map>
 #include <span>
-#include <string>
+#include <unordered_map>
 
 /// @brief
 ///   The main namespace for the bl library. For a thorough explanation of how
@@ -12,8 +12,8 @@ namespace bl {
 	// See https://semver.org/
 
 	inline constexpr unsigned major{0};
-	inline constexpr unsigned minor{6};
-	inline constexpr unsigned patch{1};
+	inline constexpr unsigned minor{7};
+	inline constexpr unsigned patch{0};
 
 	/// @brief
 	///   Namespace dedicated to connectors, for convenience. This way you
@@ -306,6 +306,9 @@ namespace bl {
 		std::size_t id{};	    ///< Block ID.
 		bool component{}; ///< `true` if the block is a component,
 				  ///< `false` otherwise.
+
+		bool
+		operator==(block_type_traits const&) const noexcept = default;
 	};
 
 	/// @brief
@@ -317,6 +320,9 @@ namespace bl {
 		std::string_view name{}; ///< The name of the material.
 		char encoded{};		 ///< The encoded version of the
 					 ///< material.
+
+		bool
+		operator==(material_traits const&) const noexcept = default;
 	};
 
 	/// @brief
@@ -327,6 +333,9 @@ namespace bl {
 	public:
 		std::string_view name{};
 		char encoded{};
+
+		bool operator==(delay_interval_traits const&) const noexcept
+			= default;
 	};
 
 	/// @brief
@@ -337,6 +346,9 @@ namespace bl {
 	public:
 		std::string_view name{};
 		char encoded{};
+
+		bool operator==(timer_interval_traits const&) const noexcept
+			= default;
 	};
 
 	/// @brief
@@ -347,6 +359,9 @@ namespace bl {
 	public:
 		std::string_view name{};
 		std::size_t encoded{};
+
+		bool operator==(detection_shape_traits const&) const noexcept
+			= default;
 	};
 
 	/// @brief
@@ -403,7 +418,18 @@ namespace bl {
 
 		std::array<char, 4> encode() const;
 	};
+}
 
+namespace std {
+	template<>
+	struct hash<bl::vec3> {
+		std::size_t operator()(bl::vec3 const& v) const {
+			return v.z << 16 | v.y << 8 | v.x;
+		}
+	};
+}
+
+namespace bl {
 	/// @brief The rotation of a block, measured in right angles.
 	class rotation {
 	public:
@@ -433,7 +459,18 @@ namespace bl {
 
 		char encode() const;
 	};
+}
 
+namespace std {
+	template<>
+	struct hash<bl::rotation> {
+		std::size_t operator()(bl::rotation const& v) const {
+			return v.z << 4 | v.y << 2 | v.x;
+		}
+	};
+}
+
+namespace bl {
 	/// @brief Configuration for `Delay`s.
 	class delay_cfg {
 	public:
@@ -444,6 +481,8 @@ namespace bl {
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		delay_cfg(std::string_view v);
+
+		bool operator==(delay_cfg const&) const noexcept = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -461,6 +500,8 @@ namespace bl {
 		/// @param[in] v A value.
 		timer_cfg(std::string_view v);
 
+		bool operator==(timer_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -473,6 +514,8 @@ namespace bl {
 		std::string text{}; ///< Text.
 
 		text_cfg() = default;
+
+		bool operator==(text_cfg const&) const noexcept = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -492,6 +535,9 @@ namespace bl {
 		/// @param[in] v A value.
 		legacy_kill_module_cfg(std::string_view v);
 
+		bool operator==(legacy_kill_module_cfg const&) const noexcept
+			= default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -500,13 +546,16 @@ namespace bl {
 	/// @brief Configuration for `Dip Switches`.
 	class dip_switches_cfg {
 	public:
-		std::uint_least8_t val{0};
+		std::uint_least8_t val{};
 
 		dip_switches_cfg() noexcept = default;
 
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		dip_switches_cfg(std::string_view v);
+
+		bool
+		operator==(dip_switches_cfg const&) const noexcept = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -516,13 +565,15 @@ namespace bl {
 	/// @brief Configuration for `EEPROM`s.
 	class eeprom_cfg {
 	public:
-		std::map<std::uint8_t, std::uint8_t> mem{};
+		std::unordered_map<std::uint8_t, std::uint8_t> mem{};
 
 		eeprom_cfg() = default;
 
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		eeprom_cfg(std::string_view v);
+
+		bool operator==(eeprom_cfg const&) const = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -541,6 +592,9 @@ namespace bl {
 		/// @param[in] v A value.
 		block_placer_cfg(std::string_view v);
 
+		bool
+		operator==(block_placer_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -558,6 +612,9 @@ namespace bl {
 		/// @param[in] v A value.
 		tnt_activator_cfg(std::string_view v);
 
+		bool
+		operator==(tnt_activator_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -566,13 +623,15 @@ namespace bl {
 	/// @brief Configuration for `16 Bit EEPROM`s.
 	class eeprom16_cfg {
 	public:
-		std::map<std::uint16_t, std::uint16_t> mem{};
+		std::unordered_map<std::uint16_t, std::uint16_t> mem{};
 
 		eeprom16_cfg() = default;
 
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		eeprom16_cfg(std::string_view v);
+
+		bool operator==(eeprom16_cfg const&) const = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -593,6 +652,8 @@ namespace bl {
 		/// @param[in] v A value.
 		speaker_cfg(std::string_view v);
 
+		bool operator==(speaker_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -612,6 +673,9 @@ namespace bl {
 		/// @param[in] v A value.
 		teleport_module_cfg(std::string_view v);
 
+		bool
+		operator==(teleport_module_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -629,6 +693,10 @@ namespace bl {
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		legacy_player_detector_cfg(std::string_view v);
+
+		bool operator==(
+			legacy_player_detector_cfg const&
+		) const noexcept = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -648,6 +716,9 @@ namespace bl {
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		http_transmitter_cfg(std::string_view v);
+
+		bool operator==(http_transmitter_cfg const&) const noexcept
+			= default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -670,6 +741,9 @@ namespace bl {
 		/// @param[in] v A value.
 		legacy_keypad_cfg(std::string_view v);
 
+		bool
+		operator==(legacy_keypad_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -686,6 +760,9 @@ namespace bl {
 		/// @param[in] v A value.
 		precise_randomizer_cfg(std::string_view v);
 
+		bool operator==(precise_randomizer_cfg const&) const noexcept
+			= default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -700,6 +777,8 @@ namespace bl {
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		buzzer_cfg(std::string_view v);
+
+		bool operator==(buzzer_cfg const&) const noexcept = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -716,6 +795,8 @@ namespace bl {
 		/// @brief Construct from a value.
 		/// @param[in] v A value.
 		cake_cfg(std::string_view v);
+
+		bool operator==(cake_cfg const&) const noexcept = default;
 
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
@@ -752,6 +833,9 @@ namespace bl {
 		/// @param[in] v A value.
 		kill_module_cfg(std::string_view v);
 
+		bool
+		operator==(kill_module_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -786,6 +870,9 @@ namespace bl {
 		/// @param[in] v A value.
 		player_detector_cfg(std::string_view v);
 
+		bool
+		operator==(player_detector_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -807,6 +894,8 @@ namespace bl {
 		/// @param[in] v A value.
 		keypad_cfg(std::string_view v);
 
+		bool operator==(keypad_cfg const&) const noexcept = default;
+
 		/// @brief Convert the configuration to a value.
 		/// @returns The stringified configuration.
 		std::string to_value() const;
@@ -822,6 +911,8 @@ namespace bl {
 		vec3 color{255};		  ///< Color.
 		rotation rot{};			  ///< Rotation.
 		bool activated{};		  ///< Activated-ness.
+
+		bool operator==(block const&) const noexcept = default;
 	};
 
 	/// @brief
@@ -845,8 +936,31 @@ namespace bl {
 	public:
 		static unique_id create();
 		auto operator<=>(unique_id const&) const noexcept = default;
-	};
 
+		// Let the C++ stdlib figure out how to squash a 256-bit number
+		// into a 64-bit hash.
+		std::size_t hash() const noexcept {
+			using t = std::bitset<256>;
+			return std::hash<t>()(
+				t(this->_d) << 192
+				| t(this->_c) << 128
+				| t(this->_b) << 64
+				| t(this->_a)
+			);
+		}
+	};
+}
+
+namespace std {
+	template<>
+	struct hash<bl::unique_id> {
+		std::size_t operator()(bl::unique_id const& v) const {
+			return v.hash();
+		}
+	};
+}
+
+namespace bl {
 	/// @brief Wires.
 	class block_wire {
 	public:
@@ -854,6 +968,8 @@ namespace bl {
 		unique_id to_blk{};   ///< The destination block of the wire.
 		char from_con{};      ///< The source connector of the wire.
 		char to_con{};	      ///< The destination block of the wire.
+
+		bool operator==(block_wire const&) const noexcept = default;
 	};
 
 	/// @brief
@@ -861,8 +977,8 @@ namespace bl {
 	///   Logic world.
 	class emplacement {
 	public:
-		std::map<unique_id, block> blks{};	 ///< Blocks.
-		std::map<unique_id, block_wire> wires{}; ///< Wires.
+		std::unordered_map<unique_id, block> blks{};	   ///< Blocks.
+		std::unordered_map<unique_id, block_wire> wires{}; ///< Wires.
 
 		emplacement() = default;
 
@@ -870,6 +986,8 @@ namespace bl {
 		/// @param[in] src
 		///   An encoded emplacement (savestring) to load from.
 		emplacement(std::string_view src);
+
+		bool operator==(emplacement const&) const = default;
 
 		/// @brief Create a new block.
 		/// @param[in] blk The block.

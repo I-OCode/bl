@@ -1,5 +1,4 @@
 #include "bl.hpp"
-#include <unordered_map>
 
 template<
 	class enum_type, class traits_type, class trait_type,

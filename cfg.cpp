@@ -1,7 +1,6 @@
 #include "bl.hpp"
 #include "detail.hpp"
 #include <format>
-#include <limits>
 #include <ranges>
 
 class value_stream: public stream {

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0
+
+- Added `operator==()` to all classes that didn't have it already.
+- Added `std::hash` specializations for `bl::vec3`, `bl::rotation`, and
+  `bl::unique_id`.
+- Switched `bl::eeprom_cfg`, `bl::eeprom16_cfg`, and `bl::emplacement` to use
+  `std::unordered_map`s instead of `std::map`s.
+
 ## 0.6.1
 
 - Removed the `bl::emplacement::connect(bl::block_wire&&)` overload.

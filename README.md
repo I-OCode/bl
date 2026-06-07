@@ -87,7 +87,7 @@ blocks and wires. You can also directly access the `blocks` and `wires` members
 of emplacements.
 
 There are human-readable constants for connectors. These are stored in the
-`bl::con` namespace. Right now only the connectors for the AND gate is defined.
+`bl::con` namespace. For example, these are the connectors for the AND gate:
 
 ```cpp
 bl::con::eAND_Gate::A // First input.
