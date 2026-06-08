@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1
+
+Fixed `bl::emplacement::save()` not saving wires correctly. This bug was
+probably in every version of bl until this.
+
 ## 0.7.0
 
 - Added `operator==()` to all classes that didn't have it already.

@@ -13,7 +13,7 @@ namespace bl {
 
 	inline constexpr unsigned major{0};
 	inline constexpr unsigned minor{7};
-	inline constexpr unsigned patch{0};
+	inline constexpr unsigned patch{1};
 
 	/// @brief
 	///   Namespace dedicated to connectors, for convenience. This way you

@@ -234,11 +234,27 @@ std::string bl::emplacement::save() const {
 		}
 	);
 
+	std::unordered_map<unique_id, std::span<block_wire const>> in_wires{};
+
+	std::span<block_wire const> span{
+		sorted_wires.cbegin(), sorted_wires.cbegin()
+	};
+
+	for (auto const& wire: sorted_wires) {
+		if (!span.empty() && wire.to_blk != span.back().to_blk) {
+			in_wires[span.back().to_blk] = span;
+			span = {span.end(), span.end()};
+		}
+
+		span = {span.begin(), span.end() + 1};
+	}
+
+	if (!span.empty()) { in_wires[span.back().to_blk] = span; }
+
 	auto world_ids{gen_world_ids(this)};
 
 	std::string out{};
 
-	auto wire_it{sorted_wires.cbegin()};
 	for (auto const& [id, blk]: this->blks) {
 		auto traits{get_block_type_traits(blk.type)};
 
@@ -298,9 +314,13 @@ std::string bl::emplacement::save() const {
 		// `=` introduces a world ID. `>` is the same but indicates that
 		// the block is activated. Finally, `^` introduces wires.
 
-		bool has_wires{
-			wire_it != sorted_wires.cend() && wire_it->to_blk == id
-		};
+		auto wire_span_it{in_wires.find(id)};
+		bool has_wires{wire_span_it != in_wires.cend()};
+
+		std::span<bl::block_wire const> wire_span{};
+		if (has_wires) { wire_span = wire_span_it->second; }
+
+		auto wire_it{wire_span.begin()};
 
 		out += blk.activated ? '>' : (has_wires ? '^' : '=');
 
@@ -312,27 +332,27 @@ std::string bl::emplacement::save() const {
 		// Destination world ID.
 		out += bl::encode_world_id(cur_world_id);
 
-		if (has_wires) {
-			auto from_world_id{world_ids.at(wire_it->from_blk)};
-			bool to_self{cur_world_id == from_world_id};
-
-			out += to_self ? '-' : '_';
-
-			// Source connector.
-			out += wire_it->from_con;
-
-			// Source world ID. This is omitted if the wire is
-			// targetting itself.
-			if (!to_self) {
-				out += bl::encode_world_id(from_world_id);
-			}
-
-			++wire_it;
+		if (!has_wires) {
+			out += ';';
+			continue;
 		}
 
+		auto from_world_id{world_ids.at(wire_it->from_blk)};
+		bool to_self{cur_world_id == from_world_id};
+
+		out += to_self ? '-' : '_';
+
+		// Source connector.
+		out += wire_it->from_con;
+
+		// Source world ID. This is omitted if the wire is
+		// targetting itself.
+		if (!to_self) { out += bl::encode_world_id(from_world_id); }
+
+		++wire_it;
+
 		// Now for the rest of the wires.
-		for (; wire_it != sorted_wires.cend() && wire_it->to_blk == id;
-			++wire_it) {
+		for (; wire_it != wire_span.end(); ++wire_it) {
 			auto from_world_id{world_ids.at(wire_it->from_blk)};
 			bool to_self{cur_world_id == from_world_id};
 

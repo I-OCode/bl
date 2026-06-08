@@ -444,19 +444,17 @@ bl::keypad_cfg::keypad_cfg(std::string_view v): code_digits{} {
 	value_stream s{v};
 	this->unlock_on_enter_key = s.parse_num();
 	this->unlocked_time = s.parse_num();
-	std::string code{s.parse_str()};
+	stream code{s.parse_str()};
 	this->show_key_press = s.parse_num();
 	this->button_hold_time = s.parse_num();
 
-	auto it{code.cbegin()};
-	while (it != code.cend()) {
-		auto chunk_beg{it};
-		while (it != code.cend() && *it != ':') { ++it; }
-
-		std::string_view chunk{chunk_beg, it};
+	while (!code.eof()) {
+		stream chunk_beg{code};
+		code.read_until(":");
+		std::string_view chunk{chunk_beg.i, code.i};
 
 		// Consume the `:`, if there was any.
-		if (*it == ':') { ++it; }
+		code.read_single();
 
 		std::size_t num{bl::decode_world_id(chunk)};
 		std::string decoded{std::format("{}", num)};
