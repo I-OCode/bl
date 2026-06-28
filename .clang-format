@@ -1,0 +1,75 @@
+---
+AlignAfterOpenBracket: false
+AccessModifierOffset: -8
+AlignArrayOfStructures: Right
+AlignEscapedNewlines: LeftWithLastLine
+AlignOperands: DontAlign
+AlignTrailingComments:
+  AlignPPAndNotPP: false
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+AllowShortNamespacesOnASingleLine: true
+BitFieldColonSpacing: After
+BraceWrapping:
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+BreakAfterAttributes: Never
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakAfterOpenBracketSwitch: true
+BreakAfterReturnType: Automatic
+BreakBeforeBinaryOperators: All
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeCloseBracketFunction: true
+BreakBeforeCloseBracketIf: true
+BreakBeforeCloseBracketLoop: true
+BreakBeforeCloseBracketSwitch: true
+BreakBeforeBraces: Custom
+BreakBeforeTemplateCloser: true
+BreakBinaryOperations: RespectPrecedence
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
+BreakTemplateDeclarations: Yes
+ConstructorInitializerIndentWidth: 8
+ContinuationIndentWidth: 8
+Cpp11BracedListStyle: FunctionCall
+EnumTrailingComma: Remove
+FixNamespaceComments: false
+IncludeBlocks: Merge
+IndentExternBlock: Indent
+IndentGotoLabels: false
+IndentPPDirectives: BeforeHash
+IndentWidth: 8
+InsertBraces: true
+InsertNewlineAtEOF: true
+KeepEmptyLines:
+  AtStartOfBlock: false
+  AtStartOfFile: false
+LineEnding: LF
+NamespaceIndentation: All
+PenaltyExcessCharacter: 1000000000
+PenaltyIndentedWhitespace: 1000000
+PointerAlignment: Left
+QualifierAlignment: Custom
+QualifierOrder: [static, inline, constexpr, friend, type, const, volatile, restrict]
+RemoveEmptyLinesInUnwrappedLines: true
+RemoveParentheses: ReturnStatement
+RemoveSemicolon: true
+SkipMacroDefinitionBody: true
+SpaceAfterTemplateKeyword: false
+SpaceBeforeCtorInitializerColon: false
+SpaceBeforeInheritanceColon: false
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterForeachMacros: false
+  AfterIfMacros: false
+  AfterPlacementOperator: false
+SpaceBeforeRangeBasedForLoopColon: false
+UseTab: Always
+WrapNamespaceBodyWithEmptyLines: Never
+...
