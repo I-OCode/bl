@@ -1,7 +1,6 @@
 #pragma once
 
 #include <optional>
-#include <span>
 #include <string_view>
 
 // Simple function to check if a character is one of the given characters in
@@ -48,10 +47,11 @@ public:
 	}
 
 	template<std::size_t n>
-	std::optional<std::span<char const, n>> read() noexcept {
+	std::optional<std::array<char, n>> read() noexcept {
 		if (!this->could_read(n)) { return {}; }
 
-		std::span<char const, n> s{this->i, n};
+		std::array<char, n> s{};
+		std::copy(this->i, this->i + n, s.begin());
 		this->i += n;
 
 		return s;

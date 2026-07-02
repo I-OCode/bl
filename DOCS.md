@@ -24,7 +24,7 @@ see this term being used in the source code.
 ### Encoded names
 
 Encoded names are literally the encoded version of a block name. You can find a
-big list of all the encoded names in the `block_type_db.txt` file. Here's a
+big list of all the encoded names in the `block_name_db.txt` file. Here's a
 sample line from the file:
 
 ```text
@@ -32,7 +32,7 @@ X(Block, "Block", "G", 43, F)
 ```
 
 `"Block"` is the full name of the block, and `G` is the encoded name. `43` is
-the block ID, which is a numerical representation of block types.
+the block ID, which is a numerical representation of block names.
 
 Unfortunately, one character isn't enough to encode all blocks so Tomtom
 extended the encoded name format with the special characters `#` and `%`. When
@@ -60,7 +60,7 @@ unlisted blocks:
 There're probably more though. Also, I don't know what the encoded names of
 these restricted blocks are, because well, you can't place them.
 
-Restricted blocks have the name `e_unknown_XXX_` in `bl::block_type`, where
+Restricted blocks have the name `e_unknown_XXX_` in `bl::block_name`, where
 `XXX` is their block ID. The reason why I didn't use names like `eLoki_Spawner`
 or `eJunction_Block` is that I have no idea which restricted block corresponds
 to which block ID. Technically the enumerator values don't strictly have to

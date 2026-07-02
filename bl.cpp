@@ -3,7 +3,7 @@
 #include <mutex>
 #include <stdexcept>
 
-bl::vec3::vec3(std::span<char const, 4> v) {
+bl::vec3::vec3(std::array<char, 4> v) {
 	int a{bl::decode_bl64(v[0])};
 	int b{bl::decode_bl64(v[1])};
 	int c{bl::decode_bl64(v[2])};

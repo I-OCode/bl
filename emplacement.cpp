@@ -56,7 +56,7 @@ bl::emplacement::emplacement(std::string_view src) {
 		};
 
 		block info{};
-		info.type = block_type_from_encoded_name(encoded_name.data());
+		info.name = decode_block_name(encoded_name.data());
 		info.pos = encoded.read<4>().value();
 
 		// Let's say that we have a block `G$BwfA3`, where the rotation
@@ -76,7 +76,7 @@ bl::emplacement::emplacement(std::string_view src) {
 		info.color = encoded.read<4>().value_or(vec3(255).encode());
 
 		auto default_encoded_mat{
-			get_material_traits(material::eDefault).encoded
+			material_traits(material::eDefault).encoded
 		};
 
 		// ...the encoded material would be read successfuly because `3`
@@ -227,9 +227,8 @@ std::string bl::emplacement::save() const {
 		sorted_wires.push_back(item.second);
 	}
 
-	std::sort(
-		sorted_wires.begin(), sorted_wires.end(),
-		[](block_wire const& a, block_wire const& b) {
+	std::ranges::stable_sort(
+		sorted_wires, [](block_wire const& a, block_wire const& b) {
 			return a.to_blk < b.to_blk;
 		}
 	);
@@ -256,7 +255,7 @@ std::string bl::emplacement::save() const {
 	std::string out{};
 
 	for (auto const& [id, blk]: this->blks) {
-		auto traits{get_block_type_traits(blk.type)};
+		auto traits{block_name_traits(blk.name)};
 
 		// Encoded name.
 		out += traits.encoded;
@@ -285,7 +284,7 @@ std::string bl::emplacement::save() const {
 		// can specify the rotation and the material but not the color,
 		// and it'll still work.
 		if (blk.mat != material::eDefault) {
-			out += get_material_traits(blk.mat).encoded;
+			out += material_traits(blk.mat).encoded;
 		}
 
 		if (!blk.value.empty()) {

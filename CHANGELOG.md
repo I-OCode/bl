@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.8.0
+
+- **Added Python bindings!** :D
+- Renamed the following things:
+  - `bl::block_type` -> `bl::block_name`
+  - `bl::block_type_from_encoded_name()` -> `bl::decode_block_name()`
+  - `bl::block_placer_cfg::type` -> `bl::block_placer_cfg::name`
+  - `bl::block::type` -> `bl::block::name`
+- Changed the "traits" system, i.e., `bl::block_name_traits`,
+  `bl::material_traits`, etc. Instead of calling `bl::get_block_name_traits()`,
+  you use the constructor of `bl::block_name_traits` itself. Same for all the
+  other traits.
+- Switched `bl::emplacement::wires` to be a `std::map`. This was done to
+  preserve the order of wires, because sometimes the behavior of logic can
+  depend upon the order in which wires were made, and I was afraid that if I did
+  not add wire order preservation, this problem would bite somebody in the bum
+  in the future.
+- Changed `bl::vec3::vec3(std::span<char const, 4>)` to
+  `bl::vec3::vec3(std::array<char, 4>)`.
+- Added a constructor to `bl::text_cfg`.
+- Fixed a bug where the contents of value fields with extended field lengths
+  were not saved.
+
 ## 0.7.1
 
 Fixed `bl::emplacement::save()` not saving wires correctly. This bug was

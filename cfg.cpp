@@ -35,7 +35,7 @@ static std::string str_to_value(std::string const& s) {
 	// uses an alternative format where `|` and `~` are the beginning and
 	// ending delimiters, respectively.
 	if (s.length() > 82) {
-		return '|' + bl::encode_world_id(s.length()) + '~';
+		return '|' + bl::encode_world_id(s.length()) + '~' + s;
 	}
 
 	return bl::encode_bl82(s.length() - 1) + s;
@@ -131,7 +131,7 @@ bl::delay_cfg::delay_cfg(std::string_view v) {
 }
 
 std::string bl::delay_cfg::to_value() const {
-	return {get_delay_interval_traits(this->interval).encoded};
+	return {delay_interval_traits(this->interval).encoded};
 }
 
 bl::timer_cfg::timer_cfg(std::string_view v) {
@@ -139,8 +139,10 @@ bl::timer_cfg::timer_cfg(std::string_view v) {
 }
 
 std::string bl::timer_cfg::to_value() const {
-	return {get_timer_interval_traits(this->interval).encoded};
+	return {timer_interval_traits(this->interval).encoded};
 }
+
+bl::text_cfg::text_cfg(std::string_view v) { this->text = v; }
 
 std::string bl::text_cfg::to_value() const {
 	std::string s{};
@@ -218,7 +220,7 @@ std::string bl::eeprom_cfg::to_value() const {
 
 bl::block_placer_cfg::block_placer_cfg(std::string_view v) {
 	if (v == "Error") {
-		this->type = block_type::eErreur;
+		this->name = block_name::eErreur;
 	} else {
 		std::string_view str_id{v | std::views::take(v.length() - 1)};
 
@@ -232,9 +234,9 @@ bl::block_placer_cfg::block_placer_cfg(std::string_view v) {
 std::string bl::block_placer_cfg::to_value() const {
 	std::string out{};
 
-	out += this->type == block_type::eErreur
+	out += this->name == block_name::eErreur
 		? "Error"
-		: std::format("{}", bl::get_block_type_traits(this->type).id);
+		: std::format("{}", block_name_traits(this->name).id);
 
 	out += this->rot.encode();
 
@@ -410,7 +412,7 @@ std::string bl::kill_module_cfg::to_value() const {
 		+ num_to_value(this->damage)
 		+ units_to_value(this->detection_size)
 		+ num_to_value(
-			get_detection_shape_traits(this->detect_shape).encoded
+			detection_shape_traits(this->detect_shape).encoded
 		)
 		+ units_to_value(this->shape_orientation)
 		+ units_to_value(this->shape_offset);
@@ -431,7 +433,7 @@ std::string bl::player_detector_cfg::to_value() const {
 		+ str_to_value(this->activation_sel)
 		+ units_to_value(this->detection_size)
 		+ num_to_value(
-			get_detection_shape_traits(this->detect_shape).encoded
+			detection_shape_traits(this->detect_shape).encoded
 		)
 		+ units_to_value(this->shape_orientation)
 		+ units_to_value(this->shape_offset);

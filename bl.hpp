@@ -1,8 +1,9 @@
 #pragma once
 
+#include <array>
 #include <bitset>
 #include <cstdint>
-#include <span>
+#include <map>
 #include <unordered_map>
 
 /// @brief
@@ -12,16 +13,16 @@ namespace bl {
 	// See https://semver.org/
 
 	inline constexpr unsigned major{0};
-	inline constexpr unsigned minor{7};
-	inline constexpr unsigned patch{1};
+	inline constexpr unsigned minor{8};
+	inline constexpr unsigned patch{0};
 
 	/// @brief
 	///   Namespace dedicated to connectors, for convenience. This way you
 	///   can type `bl::con::eAND_Gate::A` instead of `'1'`.
 	namespace con {};
 
-	/// @brief Types of blocks.
-	enum class block_type {
+	/// @brief Block names.
+	enum class block_name {
 		// Fun fact about why these enum names begin with `e`:
 		//
 		// Things like "_Legacy Keypad" can't just have the enum name
@@ -294,71 +295,125 @@ namespace bl {
 	};
 
 	/// @brief
-	///   Some constant properties and info that is associated with
-	///   every block type. You can query these traits for a particular
-	///   block type using `get_block_traits()`.
-	class block_type_traits {
+	///   Some constant properties and info that is associated with every
+	///   block name.
+	class block_name_traits {
+	private:
+		block_name_traits(
+			std::string_view name_, std::string_view encoded_,
+			std::size_t id_, bool component_
+		):
+			name{name_}, encoded{encoded_}, id{id_},
+			component{component_} {}
+
+		static block_name_traits doit(block_name name);
+
 	public:
-		std::string_view name{};    ///< The full in-game name of the
-					    ///< block.
-		std::string_view encoded{}; ///< The encoded version of the
-					    ///< block.
-		std::size_t id{};	    ///< Block ID.
-		bool component{}; ///< `true` if the block is a component,
-				  ///< `false` otherwise.
+		std::string_view const name{}; ///< The full in-game name of the
+					       ///< block.
+		std::string_view const encoded{}; ///< The encoded version of
+						  ///< the block.
+		std::size_t const id{};		  ///< Block ID.
+		bool const component{}; ///< `true` if the block is a component,
+					///< `false` otherwise.
+
+		/// @note
+		///   For `bl::block_name::eErreur`, a block ID of `0` is
+		///   returned in the traits. Technically the block ID is
+		///   `Error` but I'd say `0` makes more sense, and I did not
+		///   want to make all block IDs strings to make `Error` work.
+		block_name_traits(block_name name):
+			block_name_traits(doit(name)) {}
 
 		bool
-		operator==(block_type_traits const&) const noexcept = default;
+		operator==(block_name_traits const&) const noexcept = default;
 	};
 
 	/// @brief
-	///   Some constant properties and info that is associated with
-	///   every material. You can query these traits for a particular
-	///   material using `get_material_traits()`.
+	///   Some constant properties and info that is associated with every
+	///   material.
 	class material_traits {
+	private:
+		material_traits(std::string_view name_, char encoded_):
+			name{name_}, encoded{encoded_} {}
+
+		static material_traits doit(material mat);
+
 	public:
-		std::string_view name{}; ///< The name of the material.
-		char encoded{};		 ///< The encoded version of the
-					 ///< material.
+		std::string_view const name{}; ///< The name of the material.
+		char const encoded{}; ///< The encoded version of the material.
+
+		material_traits(material mat): material_traits(doit(mat)) {}
 
 		bool
 		operator==(material_traits const&) const noexcept = default;
 	};
 
 	/// @brief
-	///   Some constant properties and info that is associated with
-	///   every delay interval. You can query these traits for a particular
-	///   delay interval using `get_delay_interval_traits()`.
+	///   Some constant properties and info that is associated with every
+	///   delay interval.
 	class delay_interval_traits {
+	private:
+		delay_interval_traits(std::string_view name_, char encoded_):
+			name{name_}, encoded{encoded_} {}
+
+		static delay_interval_traits doit(delay_interval interval);
+
 	public:
-		std::string_view name{};
-		char encoded{};
+		std::string_view const name{}; ///< The name of the delay
+					       ///< interval.
+		char const encoded{}; ///< The encoded version of the delay
+				      ///< interval.
+
+		delay_interval_traits(delay_interval interval):
+			delay_interval_traits(doit(interval)) {}
 
 		bool operator==(delay_interval_traits const&) const noexcept
 			= default;
 	};
 
 	/// @brief
-	///   Some constant properties and info that is associated with
-	///   every timer interval. You can query these traits for a particular
-	///   timer interval using `get_timer_interval_traits()`.
+	///   Some constant properties and info that is associated with every
+	///   timer interval.
 	class timer_interval_traits {
+	private:
+		timer_interval_traits(std::string_view name_, char encoded_):
+			name{name_}, encoded{encoded_} {}
+
+		static timer_interval_traits doit(timer_interval interval);
+
 	public:
-		std::string_view name{};
-		char encoded{};
+		std::string_view const name{}; ///< The name of the timer
+					       ///< interval.
+		char const encoded{}; ///< The encoded version of the timer
+				      ///< interval.
+
+		timer_interval_traits(timer_interval interval):
+			timer_interval_traits(doit(interval)) {}
 
 		bool operator==(timer_interval_traits const&) const noexcept
 			= default;
 	};
 
 	/// @brief
-	///   Some constant properties and info that is associated with
-	///   every detection shape. You can query these traits for a particular
-	///   detection shape using `get_detection_shape_traits()`.
+	///   Some constant properties and info that is associated with every
+	///   detection shape.
 	class detection_shape_traits {
+	private:
+		detection_shape_traits(
+			std::string_view name_, std::size_t encoded_
+		): name{name_}, encoded{encoded_} {}
+
+		static detection_shape_traits doit(detection_shape shape);
+
 	public:
-		std::string_view name{};
-		std::size_t encoded{};
+		std::string_view const name{}; ///< The name of the detection
+					       ///< shape.
+		std::size_t const encoded{};   ///< The encoded version of the
+					       ///< detection shape.
+
+		detection_shape_traits(detection_shape shape):
+			detection_shape_traits(doit(shape)) {}
 
 		bool operator==(detection_shape_traits const&) const noexcept
 			= default;
@@ -403,7 +458,7 @@ namespace bl {
 		///   Constructor to create the vector from an encoded
 		///   position/color.
 		/// @param[in] v The encoded value.
-		vec3(std::span<char const, 4> v);
+		vec3(std::array<char, 4> v);
 
 		bool operator==(vec3 const& v) const noexcept {
 			return this->x == v.x
@@ -515,6 +570,10 @@ namespace bl {
 
 		text_cfg() = default;
 
+		/// @brief Construct from a value.
+		/// @param[in] v A value.
+		text_cfg(std::string_view v);
+
 		bool operator==(text_cfg const&) const noexcept = default;
 
 		/// @brief Convert the configuration to a value.
@@ -583,7 +642,7 @@ namespace bl {
 	/// @brief Configuration for `Block Placer`s.
 	class block_placer_cfg {
 	public:
-		block_type type{block_type::eBlock}; ///< Block type.
+		block_name name{block_name::eBlock}; ///< Block name.
 		rotation rot{};			     ///< Rotation.
 
 		block_placer_cfg() noexcept = default;
@@ -905,7 +964,7 @@ namespace bl {
 	class block {
 	public:
 		std::string value{};		  ///< Value.
-		block_type type{};		  ///< Type.
+		block_name name{};		  ///< Name.
 		material mat{material::eDefault}; ///< Material.
 		vec3 pos{};			  ///< Position.
 		vec3 color{255};		  ///< Color.
@@ -977,8 +1036,8 @@ namespace bl {
 	///   Logic world.
 	class emplacement {
 	public:
-		std::unordered_map<unique_id, block> blks{};	   ///< Blocks.
-		std::unordered_map<unique_id, block_wire> wires{}; ///< Wires.
+		std::unordered_map<unique_id, block> blks{}; ///< Blocks.
+		std::map<unique_id, block_wire> wires{};     ///< Wires.
 
 		emplacement() = default;
 
@@ -1038,54 +1097,15 @@ namespace bl {
 		std::string save() const;
 	};
 
-	/// @brief Get a `block_type_traits` object of a particular block type.
-	/// @param[in] type A block type.
-	/// @returns The aforementioned traits.
-	/// @note
-	///   For `bl::block_type::eErreur`, a block ID of `0` is returned in
-	///   the traits. Technically the block ID is `Error` but I'd say `0`
-	///   makes more sense, and I did not want to make all block IDs strings
-	///   to make `Error` work.
-	block_type_traits get_block_type_traits(block_type type);
-
-	/// @brief Get a `material_traits` object of a particular material.
-	/// @param[in] mat A material.
-	/// @returns The aforementioned traits.
-	material_traits get_material_traits(material mat);
-
-	/// @brief
-	///   Get a `delay_interval_traits` object of a particular delay
-	///   interval.
-	/// @param[in] interval A delay interval.
-	/// @returns The aforementioned traits.
-	delay_interval_traits
-	get_delay_interval_traits(delay_interval interval);
-
-	/// @brief
-	///   Get a `timer_interval_traits` object of a particular timer
-	///   interval.
-	/// @param[in] interval A timer interval.
-	/// @returns The aforementioned traits.
-	timer_interval_traits
-	get_timer_interval_traits(timer_interval interval);
-
-	/// @brief
-	///   Get a `detection_shape_traits` object of a particular detection
-	///   shape.
-	/// @param[in] shape A detection shape.
-	/// @returns The aforementioned traits.
-	detection_shape_traits
-	get_detection_shape_traits(detection_shape shape);
-
-	/// @brief Create a block type from an encoded name.
+	/// @brief Create a block name from an encoded name.
 	/// @param[in] v An encoded name.
-	/// @returns A block type.
-	block_type block_type_from_encoded_name(std::string_view v);
+	/// @returns A block name.
+	block_name decode_block_name(std::string_view v);
 
-	/// @brief Create a block type from a block ID.
+	/// @brief Create a block name from a block ID.
 	/// @param[in] v A block ID.
-	/// @returns A block type.
-	block_type block_type_from_block_id(std::size_t v);
+	/// @returns A block name.
+	block_name block_name_from_block_id(std::size_t v);
 
 	/// @brief Create a material from an encoded material.
 	/// @param[in] v An encoded material.
