@@ -40,21 +40,21 @@ public:
 	std::optional<std::string_view> read(std::size_t n) noexcept {
 		if (!this->could_read(n)) { return {}; }
 
-		std::string_view s{this->i, n};
+		std::string_view str{this->i, n};
 		this->i += n;
 
-		return s;
+		return str;
 	}
 
 	template<std::size_t n>
 	std::optional<std::array<char, n>> read() noexcept {
 		if (!this->could_read(n)) { return {}; }
 
-		std::array<char, n> s{};
-		std::copy(this->i, this->i + n, s.begin());
+		std::array<char, n> str{};
+		std::copy(this->i, this->i + n, str.begin());
 		this->i += n;
 
-		return s;
+		return str;
 	}
 
 	std::optional<char> read_single() noexcept {

@@ -12,15 +12,13 @@ sophisticated features and also clean up the code a bit more.
 
 ## Compilation
 
-bl uses CMake so it should be straightforward to compile bl. On a Linux-based
-system:
+bl uses CMake so it should be straightforward to compile bl:
 
 ```sh
 git clone https://github.com/I-OCode/bl
 cd bl
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release .. # or use Debug for debug builds
-make -j${nproc}
+cmake -DCMAKE_BUILD_TYPE=Release -S . -B build # or use Debug for debug builds
+cmake --build build
 ```
 
 To compile the Python bindings, enable the `BL_BUILD_PYTHON_BINDINGS` option.

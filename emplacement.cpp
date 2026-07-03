@@ -336,17 +336,17 @@ std::string bl::emplacement::save() const {
 			continue;
 		}
 
-		auto from_world_id{world_ids.at(wire_it->from_blk)};
-		bool to_self{cur_world_id == from_world_id};
+		auto from_world_id1{world_ids.at(wire_it->from_blk)};
+		bool to_self1{cur_world_id == from_world_id1};
 
-		out += to_self ? '-' : '_';
+		out += to_self1 ? '-' : '_';
 
 		// Source connector.
 		out += wire_it->from_con;
 
 		// Source world ID. This is omitted if the wire is
 		// targetting itself.
-		if (!to_self) { out += bl::encode_world_id(from_world_id); }
+		if (!to_self1) { out += bl::encode_world_id(from_world_id1); }
 
 		++wire_it;
 

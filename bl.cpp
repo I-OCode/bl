@@ -4,10 +4,10 @@
 #include <stdexcept>
 
 bl::vec3::vec3(std::array<char, 4> v) {
-	int a{bl::decode_bl64(v[0])};
-	int b{bl::decode_bl64(v[1])};
-	int c{bl::decode_bl64(v[2])};
-	int d{bl::decode_bl64(v[3])};
+	auto a{bl::decode_bl64(v[0])};
+	auto b{bl::decode_bl64(v[1])};
+	auto c{bl::decode_bl64(v[2])};
+	auto d{bl::decode_bl64(v[3])};
 
 	this->x = 64 * (b % 4) + a;
 	this->y = 16 * (c % 16) + b / 4;
@@ -111,7 +111,7 @@ std::size_t bl::decode_units(std::string_view v) {
 }
 
 char bl::encode62(std::uint8_t v) {
-	if (v >= 0 && v <= 9) {
+	if (v <= 9) {
 		return '0' + v;
 	} else if (v >= 10 && v <= 35) {
 		return 'a' + (v - 10);
@@ -119,11 +119,11 @@ char bl::encode62(std::uint8_t v) {
 		return 'A' + (v - 36);
 	}
 
-	throw std::out_of_range("'v' not in [0, 61]");
+	throw std::out_of_range("not in [0, 61]");
 }
 
 char bl::encode_bl64(std::uint8_t v) {
-	if (v >= 0 && v <= 25) {
+	if (v <= 25) {
 		return 'A' + v;
 	} else if (v >= 26 && v <= 51) {
 		return 'a' + (v - 26);
@@ -133,21 +133,21 @@ char bl::encode_bl64(std::uint8_t v) {
 		return '#' + (v - 62);
 	}
 
-	throw std::out_of_range("'v' not in [0, 63]");
+	throw std::out_of_range("not in [0, 63]");
 }
 
 char bl::encode_bl71(std::uint8_t v) {
-	if (v >= 0 && v <= 61) {
+	if (v <= 61) {
 		return encode62(v);
 	} else if (v >= 62 && v <= 70) {
 		return "!@$%?&<()"[v - 62];
 	}
 
-	throw std::out_of_range("'v' not in [0, 70]");
+	throw std::out_of_range("not in [0, 70]");
 }
 
 char bl::encode_bl75(std::uint8_t v) {
-	if (v >= 0 && v <= 25) {
+	if (v <= 25) {
 		return 'a' + v;
 	} else if (v >= 26 && v <= 51) {
 		return 'A' + (v - 26);
@@ -155,18 +155,18 @@ char bl::encode_bl75(std::uint8_t v) {
 		return "!@#$%?&<>()+_*{}[]~`'\"|"[v - 52];
 	}
 
-	throw std::out_of_range("'v' not in [0, 74]");
+	throw std::out_of_range("not in [0, 74]");
 }
 
 char bl::encode_bl82(std::uint8_t v) {
-	if (v >= 0 && v <= 61) {
+	if (v <= 61) {
 		return encode62(v);
 	} else if (v >= 62 && v <= 81) {
 		// Notice how there are two `!`s here.
 		return "!@$%?&#<()*+-/:,!._="[v - 62];
 	}
 
-	throw std::out_of_range("'v' not in [0, 81]");
+	throw std::out_of_range("not in [0, 81]");
 }
 
 std::uint8_t bl::decode62(char v) {
@@ -178,7 +178,7 @@ std::uint8_t bl::decode62(char v) {
 		return (v - 'A') + 36;
 	}
 
-	throw std::out_of_range("'v' not in [0-9a-zA-Z]");
+	throw std::out_of_range("not in [0-9a-zA-Z]");
 }
 
 std::uint8_t bl::decode_bl64(char v) {
@@ -192,7 +192,7 @@ std::uint8_t bl::decode_bl64(char v) {
 		return (v - '#') + 62;
 	}
 
-	throw std::out_of_range("'v' not in [A-Za-z0-9#$]");
+	throw std::out_of_range("not in [A-Za-z0-9#$]");
 }
 
 std::uint8_t bl::decode_bl71(char v) {
@@ -210,7 +210,7 @@ std::uint8_t bl::decode_bl71(char v) {
 		} catch (...) {}
 	}
 
-	throw std::out_of_range("'v' not in [0-9a-zA-Z!@$%?&<()]");
+	throw std::out_of_range("not in [0-9a-zA-Z!@$%?&<()]");
 }
 
 std::uint8_t bl::decode_bl75(char v) {
@@ -246,7 +246,7 @@ std::uint8_t bl::decode_bl75(char v) {
 		}
 	}
 
-	throw std::out_of_range("'v' not in []a-zA-Z!@#$%?&<>()+_*{}[~`'\"|]");
+	throw std::out_of_range("not in []a-zA-Z!@#$%?&<>()+_*{}[~`'\"|]");
 }
 
 std::uint8_t bl::decode_bl82(char v) {
@@ -276,5 +276,5 @@ std::uint8_t bl::decode_bl82(char v) {
 		} catch (...) {}
 	}
 
-	throw std::out_of_range("'v' not in [0-9a-zA-Z@$%?&#<()*+-/:,!._=]");
+	throw std::out_of_range("not in [0-9a-zA-Z@$%?&#<()*+-/:,!._=]");
 }

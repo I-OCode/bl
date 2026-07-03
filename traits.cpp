@@ -1,4 +1,5 @@
 #include "bl.hpp"
+#include <stdexcept>
 
 #define T true
 #define F false
@@ -10,6 +11,8 @@ bl::block_name_traits bl::block_name_traits::doit(bl::block_name name) {
 	switch (name) {
 #include "block_name_db.txt"
 	}
+
+	throw std::invalid_argument("invalid enum");
 }
 
 bl::material_traits bl::material_traits::doit(material mat) {
@@ -17,6 +20,8 @@ bl::material_traits bl::material_traits::doit(material mat) {
 	switch (mat) {
 #include "material_db.txt"
 	}
+
+	throw std::invalid_argument("invalid enum");
 }
 
 bl::delay_interval_traits
@@ -25,6 +30,8 @@ bl::delay_interval_traits::doit(delay_interval interval) {
 	switch (interval) {
 #include "delay_interval_db.txt"
 	}
+
+	throw std::invalid_argument("invalid enum");
 }
 
 bl::timer_interval_traits
@@ -33,6 +40,8 @@ bl::timer_interval_traits::doit(timer_interval interval) {
 	switch (interval) {
 #include "timer_interval_db.txt"
 	}
+
+	throw std::invalid_argument("invalid enum");
 }
 
 bl::detection_shape_traits
@@ -41,6 +50,8 @@ bl::detection_shape_traits::doit(detection_shape shape) {
 	switch (shape) {
 #include "detection_shape_db.txt"
 	}
+
+	throw std::invalid_argument("invalid enum");
 }
 
 #undef X

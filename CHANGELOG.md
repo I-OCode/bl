@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.1
+
+Did some small tweaks that didn't affect the public API.
+
 ## 0.8.0
 
 - **Added Python bindings!** :D

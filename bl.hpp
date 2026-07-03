@@ -14,12 +14,12 @@ namespace bl {
 
 	inline constexpr unsigned major{0};
 	inline constexpr unsigned minor{8};
-	inline constexpr unsigned patch{0};
+	inline constexpr unsigned patch{1};
 
 	/// @brief
 	///   Namespace dedicated to connectors, for convenience. This way you
 	///   can type `bl::con::eAND_Gate::A` instead of `'1'`.
-	namespace con {};
+	namespace con {}
 
 	/// @brief Block names.
 	enum class block_name {
@@ -302,7 +302,7 @@ namespace bl {
 		block_name_traits(
 			std::string_view name_, std::string_view encoded_,
 			std::size_t id_, bool component_
-		):
+		) noexcept:
 			name{name_}, encoded{encoded_}, id{id_},
 			component{component_} {}
 
@@ -322,8 +322,8 @@ namespace bl {
 		///   returned in the traits. Technically the block ID is
 		///   `Error` but I'd say `0` makes more sense, and I did not
 		///   want to make all block IDs strings to make `Error` work.
-		block_name_traits(block_name name):
-			block_name_traits(doit(name)) {}
+		block_name_traits(block_name name_):
+			block_name_traits(doit(name_)) {}
 
 		bool
 		operator==(block_name_traits const&) const noexcept = default;
@@ -334,7 +334,7 @@ namespace bl {
 	///   material.
 	class material_traits {
 	private:
-		material_traits(std::string_view name_, char encoded_):
+		material_traits(std::string_view name_, char encoded_) noexcept:
 			name{name_}, encoded{encoded_} {}
 
 		static material_traits doit(material mat);
@@ -354,8 +354,9 @@ namespace bl {
 	///   delay interval.
 	class delay_interval_traits {
 	private:
-		delay_interval_traits(std::string_view name_, char encoded_):
-			name{name_}, encoded{encoded_} {}
+		delay_interval_traits(
+			std::string_view name_, char encoded_
+		) noexcept: name{name_}, encoded{encoded_} {}
 
 		static delay_interval_traits doit(delay_interval interval);
 
@@ -377,8 +378,9 @@ namespace bl {
 	///   timer interval.
 	class timer_interval_traits {
 	private:
-		timer_interval_traits(std::string_view name_, char encoded_):
-			name{name_}, encoded{encoded_} {}
+		timer_interval_traits(
+			std::string_view name_, char encoded_
+		) noexcept: name{name_}, encoded{encoded_} {}
 
 		static timer_interval_traits doit(timer_interval interval);
 
@@ -402,7 +404,7 @@ namespace bl {
 	private:
 		detection_shape_traits(
 			std::string_view name_, std::size_t encoded_
-		): name{name_}, encoded{encoded_} {}
+		) noexcept: name{name_}, encoded{encoded_} {}
 
 		static detection_shape_traits doit(detection_shape shape);
 
@@ -1219,62 +1221,62 @@ namespace bl::cake {
 	inline constexpr std::uint8_t e0{1 << 5};
 	inline constexpr std::uint8_t e7{1 << 6};
 	inline constexpr std::uint8_t e5{1 << 7};
-};
+}
 
 /// @brief AND Gate
 namespace bl::con::eAND_Gate {
 	inline constexpr char a{'1'}; ///< First input.
 	inline constexpr char b{'2'}; ///< Second input.
 	inline constexpr char q{'3'}; ///< Output.
-};
+}
 
 /// @brief NAND Gate
 namespace bl::con::eNAND_Gate {
 	inline constexpr char a{'1'}; ///< First input.
 	inline constexpr char b{'2'}; ///< Second input.
 	inline constexpr char q{'3'}; ///< Output.
-};
+}
 
 /// @brief NOR Gate
 namespace bl::con::eNOR_Gate {
 	inline constexpr char a{'1'}; ///< First input.
 	inline constexpr char b{'2'}; ///< Second input.
 	inline constexpr char q{'3'}; ///< Output.
-};
+}
 
 /// @brief NOT Gate
 namespace bl::con::eNOT_Gate {
 	inline constexpr char a{'1'}; ///< Input.
 	inline constexpr char q{'2'}; ///< Output.
-};
+}
 
 /// @brief OR Gate
 namespace bl::con::eOR_Gate {
 	inline constexpr char a{'1'}; ///< First input.
 	inline constexpr char b{'2'}; ///< Second input.
 	inline constexpr char q{'3'}; ///< Output.
-};
+}
 
 /// @brief Splitter
 namespace bl::con::eSplitter {
 	inline constexpr char a{'1'}; ///< Input.
 	inline constexpr char q{'2'}; ///< First output.
 	inline constexpr char r{'3'}; ///< Second output.
-};
+}
 
 /// @brief XNOR Gate
 namespace bl::con::eXNOR_Gate {
 	inline constexpr char a{'1'}; ///< First input.
 	inline constexpr char b{'2'}; ///< Second input.
 	inline constexpr char q{'3'}; ///< Output.
-};
+}
 
 /// @brief XOR Gate
 namespace bl::con::eXOR_Gate {
 	inline constexpr char a{'1'}; ///< First input.
 	inline constexpr char b{'2'}; ///< Second input.
 	inline constexpr char q{'3'}; ///< Output.
-};
+}
 
 /// @brief Counter
 namespace bl::con::eCounter {
@@ -1287,7 +1289,7 @@ namespace bl::con::eCounter {
 	inline constexpr char q2{'7'};	    ///< Output[2].
 	inline constexpr char q3{'8'};	    ///< Output[3].
 	inline constexpr char reset{'9'};   ///< Reset input.
-};
+}
 
 /// @brief 8 Bit Shifter Counter
 namespace bl::con::e8_Bit_Shifter_Counter {
@@ -1303,4 +1305,4 @@ namespace bl::con::e8_Bit_Shifter_Counter {
 	inline constexpr char q2{'a'};	   ///< Output[2].
 	inline constexpr char q1{'b'};	   ///< Output[1].
 	inline constexpr char q0{'c'};	   ///< Output[0].
-};
+}
