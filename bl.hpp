@@ -14,7 +14,7 @@ namespace bl {
 
 	inline constexpr unsigned major{0};
 	inline constexpr unsigned minor{8};
-	inline constexpr unsigned patch{1};
+	inline constexpr unsigned patch{2};
 
 	/// @brief
 	///   Namespace dedicated to connectors, for convenience. This way you
@@ -564,8 +564,7 @@ namespace bl {
 		std::string to_value() const;
 	};
 
-	/// @brief Configuration for `Sign`s, `SignWATT_Down`s,
-	///        `SignWATT`s, and `Text Button`s.
+	/// @brief Configuration for signs and text buttons.
 	class text_cfg {
 	public:
 		std::string text{}; ///< Text.

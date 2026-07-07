@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.2
+
+Fixed a bug that caused the savestring parser to fail on signs containing `=`s
+or `^`s. This happened because if you have a savestring like `t$BwfA/a/=123`,
+the parser thought that the `=123` part was supposed to be a world ID and not
+part of the value. To fix this, the parser was simply tweaked to ignore escaped
+`=`s or `^`s.
+
 ## 0.8.1
 
 Did some small tweaks that didn't affect the public API.

@@ -59,6 +59,8 @@ bl::emplacement::emplacement(std::string_view src) {
 		info.name = decode_block_name(encoded_name.data());
 		info.pos = encoded.read<4>().value();
 
+		auto traits{block_name_traits(info.name)};
+
 		// Let's say that we have a block `G$BwfA3`, where the rotation
 		// and material were specified but the color was not. Well,
 		// then...
@@ -105,7 +107,11 @@ bl::emplacement::emplacement(std::string_view src) {
 
 			if (value_cur.eof()) { break; }
 
-			value_cur.read_single();
+			if (value_cur.read_single() == '/'
+				&& !traits.component
+				&& is_one_of(value_cur.peek_single(), "=^")) {
+				value_cur.read_single();
+			}
 		}
 
 		// If a `=` or `^` wasn't found, then we just use the end of the
